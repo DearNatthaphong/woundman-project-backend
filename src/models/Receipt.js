@@ -16,5 +16,24 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+
+  Receipt.associate = (db) => {
+    Receipt.belongsTo(db.Staff, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Receipt.hasMany(db.Payment, {
+      foreignKey: {
+        name: 'receiptId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
   return Receipt;
 };

@@ -19,5 +19,23 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+  PaymentItem.associate = (db) => {
+    PaymentItem.belongsTo(db.PaymentType, {
+      foreignKey: {
+        name: 'paymentTypeId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    PaymentItem.hasMany(db.Payment, {
+      foreignKey: {
+        name: 'paymentItemId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
   return PaymentItem;
 };

@@ -12,5 +12,16 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+
+  PaymentType.associate = (db) => {
+    PaymentType.hasMany(db.PaymentItem, {
+      foreignKey: {
+        name: 'paymentTypeId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
   return PaymentType;
 };

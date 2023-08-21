@@ -33,5 +33,25 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+
+  Treatment.associate = (db) => {
+    Treatment.belongsTo(db.Staff, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Treatment.belongsTo(db.Case, {
+      foreignKey: {
+        name: 'caseId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
+
   return Treatment;
 };

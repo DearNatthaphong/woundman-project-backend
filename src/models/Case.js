@@ -61,5 +61,49 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+
+  Case.associate = (db) => {
+    Case.belongsTo(db.Staff, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Case.belongsTo(db.Patient, {
+      foreignKey: {
+        name: 'patientId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Case.hasMany(db.Treatment, {
+      foreignKey: {
+        name: 'caseId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Case.hasMany(db.Payment, {
+      foreignKey: {
+        name: 'caseId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Case.hasOne(db.Appointment, {
+      foreignKey: {
+        name: 'caseId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
+
   return Case;
 };

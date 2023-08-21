@@ -34,5 +34,24 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+
+  Appointment.associate = (db) => {
+    Appointment.belongsTo(db.Staff, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Appointment.belongsTo(db.Case, {
+      foreignKey: {
+        name: 'caseId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
   return Appointment;
 };

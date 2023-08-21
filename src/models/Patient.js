@@ -58,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       consent: {
-        tye: DataTypes.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
       },
@@ -66,6 +66,26 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+
+  Patient.associate = (db) => {
+    Patient.hasMany(db.Case, {
+      foreignKey: {
+        name: 'patientId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Patient.hasMany(db.PatientProfileEditing, {
+      as: 'Edited',
+      foreignKey: {
+        name: 'editedId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
 
   return Patient;
 };

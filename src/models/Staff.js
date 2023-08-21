@@ -51,7 +51,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       awareness: {
-        tye: DataTypes.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
       },
@@ -59,6 +59,50 @@ module.exports = (sequelize, DataTypes) => {
     },
     { underscored: true }
   );
+
+  Staff.associate = (db) => {
+    Staff.hasMany(db.Case, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Staff.hasMany(db.Treatment, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Staff.hasMany(db.Appointment, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Staff.hasMany(db.Receipt, {
+      foreignKey: {
+        name: 'staffId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+    Staff.hasMany(db.PatientProfileEditing, {
+      as: 'Editor',
+      foreignKey: {
+        name: 'editorId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+  };
 
   return Staff;
 };
