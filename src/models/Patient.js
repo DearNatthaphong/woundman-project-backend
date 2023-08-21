@@ -1,0 +1,71 @@
+const {
+  TITLE_NAME_ฺBOY,
+  TITLE_NAME_ฺGIRL,
+  TITLE_NAME_MR,
+  TITLE_NAME_MRS,
+  TITLE_NAME_MISS
+} = require('../config/constants');
+
+module.exports = (sequelize, DataTypes) => {
+  const Patient = sequelize.define(
+    'Patient',
+    {
+      titleName: {
+        type: DataTypes.ENUM(
+          TITLE_NAME_ฺBOY,
+          TITLE_NAME_ฺGIRL,
+          TITLE_NAME_MR,
+          TITLE_NAME_MISS,
+          TITLE_NAME_MRS
+        ),
+        allowNull: false,
+        defaultValue: TITLE_NAME_ฺBOY
+      },
+      firstName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: true
+        }
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: true
+        }
+      },
+      idCard: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false
+      },
+      dateOfBirth: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+      },
+      mobile: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false
+      },
+      idLine: {
+        type: DataTypes.STRING,
+        unique: true
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      consent: {
+        tye: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      profileImage: DataTypes.STRING
+    },
+    { underscored: true }
+  );
+
+  return Patient;
+};
