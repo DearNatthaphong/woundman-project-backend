@@ -3,15 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const AppError = require('../utils/appError');
+const appValidate = require('../utils/appValidate');
 const { Staff } = require('../models');
 const { Patient } = require('../models');
-
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{6,}$/;
-
-function validatePassword(password) {
-  return passwordRegex.test(password);
-}
-// const validatePassword = (password) => passwordRegex.test(password);
 
 const genToken = (payload) =>
   jwt.sign(payload, process.env.JWT_SECRET_KEY || 'private_key', {
@@ -50,7 +44,7 @@ exports.staffRegister = async (req, res, next) => {
     }
 
     // validate password
-    const isPassword = validatePassword(password);
+    const isPassword = appValidate.validatePassword(password);
 
     if (!isPassword) {
       throw new AppError('รหัสผ่านไม่ถูกต้องตามที่กำหนด', 400);
@@ -118,7 +112,7 @@ exports.patientRegister = async (req, res, next) => {
       throw new AppError('ต้องใช้รหัสผ่าน', 400);
     }
 
-    const isPassword = validatePassword(password);
+    const isPassword = appValidate.validatePassword(password);
 
     if (!isPassword) {
       throw new AppError('รหัสผ่านไม่ถูกต้องตามที่กำหนด', 400);
