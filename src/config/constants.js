@@ -12,6 +12,6 @@ exports.APPOINTMENT_UPCOMING = 'รอดำเนินการ';
 exports.APPOINTMENT_PAST = 'ดำเนินการเสร็จไปแล้ว';
 exports.APPOINTMENT_CANCEL = 'ยกเลิก';
 
-exports.PAYMENT_CASH = 'CASH';
-exports.PAYMENT_TRANSFER = 'TRANSFER';
-exports.PAYMENT_CARD = 'CARD';
+exports.PAYMENT_CASH = 'เงินสด';
+exports.PAYMENT_TRANSFER = 'โอนเงิน';
+exports.PAYMENT_CARD = 'บัตรเครดิต';
