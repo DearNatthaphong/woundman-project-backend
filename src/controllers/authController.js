@@ -166,7 +166,10 @@ exports.patientLogin = async (req, res, next) => {
       throw new AppError('เลขบัตรประชาชนหรือรหัสผ่านผิดพลาด', 400);
     }
 
-    const token = genToken({ id: patient.id });
+    const token = genToken({
+      id: patient.id
+    });
+
     res.status(200).json({ token });
   } catch (err) {
     next(err);
@@ -199,9 +202,22 @@ exports.staffLogin = async (req, res, next) => {
       throw new AppError('อีเมลหรือเบอร์มือถือหรือรหัสผ่านผิดพลาด', 400);
     }
 
-    const token = genToken({ id: staff.id });
+    const token = genToken({
+      id: staff.id
+    });
     res.status(200).json({ token });
   } catch (err) {
     next(err);
   }
+};
+
+exports.getStaffMe = async (req, res) => {
+  res.status(200).json({ staff: req.user });
+};
+//ไม่ควรใช้ ให้ใช้ attributes
+// const { password, ...rest } = req.user.dataValues;
+// res.status(200).json({ staff: rest });
+
+exports.getMe = async (req, res) => {
+  res.status(200).json({ patient: req.user });
 };
