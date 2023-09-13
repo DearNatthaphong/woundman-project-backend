@@ -28,9 +28,9 @@ exports.authorizeStaff = async (req, res, next) => {
 
     const staff = await Staff.findOne({
       where: { id: payload.id },
-
       attributes: { exclude: 'password' }
     });
+
     if (!staff) {
       throw new AppError('ไม่ได้รับอนุญาต 4', 401);
     }
