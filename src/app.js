@@ -11,6 +11,7 @@ const staffRoute = require('./routes/staffRoute');
 const patientRoute = require('./routes/patientRoute');
 const notFound = require('./middlewares/notFound');
 const error = require('./middlewares/error');
+const authenticate = require('./middlewares/authenticate');
 
 const app = express();
 
@@ -23,8 +24,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/auth', authRoute);
-app.use('/staffs', staffRoute);
-app.use('/patients', patientRoute);
+app.use('/staffs', authenticate.authorizeStaff, staffRoute);
+app.use('/patients', authenticate.authorizeStaff, patientRoute);
 
 app.use(notFound);
 app.use(error);

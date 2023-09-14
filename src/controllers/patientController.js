@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { Patient, PatientProfileEditing } = require('../models');
 const cloudinary = require('../utils/cloudinary');
+const AppError = require('../utils/appError');
 
 exports.updatePatient = async (req, res, next) => {
   try {
@@ -77,6 +78,37 @@ exports.updatePatient = async (req, res, next) => {
 
     // console.log(req.files);
     // res.status(200).json('success');
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllPatients = async (req, res, next) => {
+  try {
+    const patients = await Patient.findAll({
+      attributes: { exclude: 'password' },
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(patients);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getPatientById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const patient = await Patient.findOne({
+      where: { id },
+      attributes: { exclude: 'password' }
+    });
+
+    if (!patient) {
+      throw new AppError('patient not found', 400);
+    }
+
+    res.json(patient);
   } catch (err) {
     next(err);
   }
