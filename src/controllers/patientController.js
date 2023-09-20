@@ -2,6 +2,7 @@ const fs = require('fs');
 const { Patient, PatientProfileEditing } = require('../models');
 const cloudinary = require('../utils/cloudinary');
 const AppError = require('../utils/appError');
+const { Op } = require('sequelize');
 
 exports.updatePatient = async (req, res, next) => {
   try {
@@ -69,6 +70,14 @@ exports.updatePatient = async (req, res, next) => {
       editedId: patientId
     });
 
+    // const patientIdInt = parseInt(patientId, 10);
+    // const staffIdInt = parseInt(staffId, 10);
+
+    // await PatientProfileEditing.create({
+    //   editorId: staffIdInt,
+    //   editedId: patientIdInt
+    // });
+
     const patient = await Patient.findOne({
       where: { id: patientId },
       attributes: { exclude: 'password' }
@@ -83,13 +92,43 @@ exports.updatePatient = async (req, res, next) => {
   }
 };
 
+exports.getSearchPatients = async (req, res, next) => {
+  try {
+    const { searchTerm } = req.query;
+    const patients = await Patient.findAll({
+      //GET ALL PATIENTS WHERE searchTERM include firstName or LastName
+      attributes: { exclude: 'password' },
+      order: [['createdAt', 'DESC']],
+      where: {
+        [Op.or]: [
+          {
+            firstName: {
+              [Op.like]: `%${searchTerm}%`
+            }
+          },
+          {
+            lastName: {
+              [Op.like]: `%${searchTerm}%`
+            }
+          }
+        ]
+      }
+    });
+
+    res.status(200).json({ patients });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getAllPatients = async (req, res, next) => {
   try {
     const patients = await Patient.findAll({
       attributes: { exclude: 'password' },
       order: [['createdAt', 'DESC']]
     });
-    res.json(patients);
+
+    res.status(200).json({ patients });
   } catch (err) {
     next(err);
   }
@@ -108,7 +147,7 @@ exports.getPatientById = async (req, res, next) => {
       throw new AppError('patient not found', 400);
     }
 
-    res.json(patient);
+    res.status(200).json({ patient });
   } catch (err) {
     next(err);
   }

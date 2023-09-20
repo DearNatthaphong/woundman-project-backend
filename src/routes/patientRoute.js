@@ -13,6 +13,8 @@ router.patch(
 
 router.get('/', patientController.getAllPatients);
 
+router.get('/search', patientController.getSearchPatients);
+
 router.get('/:id', patientController.getPatientById);
 
 module.exports = router;
