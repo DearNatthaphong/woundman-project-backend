@@ -44,7 +44,16 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: true
         }
       },
-      bloodPressure: {
+      systolicBloodPressure: {
+        // Rename bloodPressure to systolicBloodPressure
+        type: DataTypes.INTEGER(3),
+        allowNull: false,
+        validate: {
+          notEmpty: true
+        }
+      },
+      diastolicBloodPressure: {
+        // New column diastolicBloodPressure
         type: DataTypes.INTEGER(3),
         allowNull: false,
         validate: {

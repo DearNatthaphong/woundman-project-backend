@@ -1,6 +1,7 @@
 const express = require('express');
 
 const patientController = require('../controllers/patientController');
+const caseController = require('../controllers/caseController');
 const upload = require('../middlewares/upload');
 
 const router = express.Router();
@@ -16,5 +17,7 @@ router.get('/', patientController.getAllPatients);
 router.get('/search', patientController.getSearchPatients);
 
 router.get('/:id', patientController.getPatientById);
+
+router.route('/:id/case').post(caseController.createCase);
 
 module.exports = router;

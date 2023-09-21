@@ -123,13 +123,15 @@ exports.patientRegister = async (req, res, next) => {
       throw new AppError('รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน', 400);
     }
 
+    const isIdLine = appValidate.validateIdLine(idLine);
+
     const hashedPassword = await bcrypt.hash(password, 12);
     const patient = await Patient.create({
       titleName,
       firstName,
       lastName,
       dateOfBirth,
-      idLine,
+      idLine: isIdLine ? idLine : null,
       consent,
       idCard: isIdCard ? idCard : null,
       mobile: isMobile ? mobile : null,
@@ -138,8 +140,20 @@ exports.patientRegister = async (req, res, next) => {
 
     const token = genToken({ id: patient.id });
     res.status(201).json({ token });
-  } catch (err) {
-    next(err);
+    // } catch (err) {
+    //   next(err);
+    // }
+  } catch (error) {
+    if (
+      error.name === 'SequelizeUniqueConstraintError' &&
+      error.fields.idLine
+    ) {
+      // Handle the uniqueness constraint violation
+      return res.status(400).json({ message: 'ID Line is already in use.' });
+    }
+
+    // Handle other errors here
+    next(error);
   }
 };
 

@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const authRoute = require('./routes/authRoute');
 const staffRoute = require('./routes/staffRoute');
 const patientRoute = require('./routes/patientRoute');
+const caseRoute = require('./routes/caseRoute');
 const notFound = require('./middlewares/notFound');
 const error = require('./middlewares/error');
 const authenticate = require('./middlewares/authenticate');
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/auth', authRoute);
 app.use('/staffs', authenticate.authorizeStaff, staffRoute);
 app.use('/patients', authenticate.authorizeStaff, patientRoute);
+app.use('cases', authenticate.authorizeStaff, caseRoute);
 
 app.use(notFound);
 app.use(error);
