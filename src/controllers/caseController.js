@@ -1,5 +1,6 @@
 const AppError = require('../utils/appError');
 const { Case, Staff, Patient } = require('../models');
+const { Op } = require('sequelize');
 
 exports.createCase = async (req, res, next) => {
   try {
@@ -81,6 +82,87 @@ exports.createCase = async (req, res, next) => {
 
     res.status(201).json({ newCase });
   } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllCases = async (req, res, next) => {
+  try {
+    const casesData = await Case.findAll({
+      attributes: { exclude: ['staffId', 'patientId'] },
+      include: [
+        { model: Staff, attributes: { exclude: 'password' } },
+        { model: Patient, attributes: { exclude: 'password' } }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ casesData });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCaseById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const caseData = await Case.findOne({
+      where: { id },
+      attributes: { exclude: ['staffId', 'patientId'] },
+      include: [
+        { model: Staff, attributes: { exclude: ['password'] } },
+        { model: Patient, attributes: { exclude: ['password'] } }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (!caseData) {
+      throw new AppError('Case with the specified ID not found', 400);
+    }
+
+    res.status(200).json({ caseData });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getSearchCases = async (req, res, next) => {
+  try {
+    const { searchTerm } = req.query;
+    console.log('Search Term:', searchTerm);
+
+    const casesData = await Case.findAll({
+      //GET ALL CASES WHERE searchTERM include firstName or LastName
+      where: {
+        [Op.or]: [
+          {
+            '$Patient.first_name$': {
+              [Op.like]: `%${searchTerm}%`
+            }
+          },
+          {
+            '$Patient.last_name$': {
+              [Op.like]: `%${searchTerm}%`
+            }
+          }
+        ]
+      },
+      attributes: { exclude: ['staffId', 'patientId'] },
+      include: [
+        { model: Staff, attributes: { exclude: ['password'] } },
+        { model: Patient, attributes: { exclude: ['password'] }, as: 'Patient' }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (casesData.length === 0) {
+      return res.status(404).json({ message: 'No matching cases found.' });
+    }
+
+    res.status(200).json({ casesData });
+  } catch (err) {
+    console.error('Error:', err);
     next(err);
   }
 };

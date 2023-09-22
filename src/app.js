@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/auth', authRoute);
 app.use('/staffs', authenticate.authorizeStaff, staffRoute);
 app.use('/patients', authenticate.authorizeStaff, patientRoute);
-app.use('cases', authenticate.authorizeStaff, caseRoute);
+app.use('/cases', authenticate.authorizeStaff, caseRoute);
 
 app.use(notFound);
 app.use(error);

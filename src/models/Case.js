@@ -83,6 +83,7 @@ module.exports = (sequelize, DataTypes) => {
     Case.belongsTo(db.Patient, {
       foreignKey: {
         name: 'patientId',
+        // as: 'Patient',
         allowNull: false
       },
       onDelete: 'RESTRICT',
