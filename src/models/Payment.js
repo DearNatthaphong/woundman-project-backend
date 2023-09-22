@@ -32,10 +32,10 @@ module.exports = (sequelize, DataTypes) => {
     Payment.belongsTo(db.Receipt, {
       foreignKey: {
         name: 'receiptId',
-        allowNull: false
+        allowNull: true // Allow initial value to be null
       },
       onDelete: 'RESTRICT',
-      onUpdate: 'RESTRICT'
+      onUpdate: 'CASCADE' // Update to null if the referenced receipt is updated
     });
     Payment.belongsTo(db.PaymentItem, {
       foreignKey: {
