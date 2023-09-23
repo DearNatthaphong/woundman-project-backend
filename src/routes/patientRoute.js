@@ -18,6 +18,8 @@ router.get('/search', patientController.getSearchPatients);
 
 router.get('/:id', patientController.getPatientById);
 
+router.get('/:id/cases', caseController.getCasesByPatientId);
+
 router.route('/:id/case').post(caseController.createCase);
 
 module.exports = router;

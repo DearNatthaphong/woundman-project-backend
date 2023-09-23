@@ -86,6 +86,27 @@ exports.createCase = async (req, res, next) => {
   }
 };
 
+exports.getCasesByPatientId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const patient = await Patient.findOne({ where: { id } });
+    if (!patient) {
+      throw new AppError('Patient not found', 400);
+    }
+
+    const cases = await Case.findAll({
+      where: { patientId: id },
+      attributes: { exclude: ['staffId', 'patientId'] },
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ cases });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getAllCases = async (req, res, next) => {
   try {
     const casesData = await Case.findAll({
