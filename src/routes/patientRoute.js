@@ -21,5 +21,8 @@ router.get('/:id', patientController.getPatientById);
 router.get('/:id/cases', caseController.getCasesByPatientId);
 
 router.route('/:id/case').post(caseController.createCase);
+router
+  .route('/:patientId/cases/:caseId')
+  .patch(caseController.updateCaseByPatientId);
 
 module.exports = router;

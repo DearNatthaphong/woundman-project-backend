@@ -107,6 +107,91 @@ exports.getCasesByPatientId = async (req, res, next) => {
   }
 };
 
+exports.updateCaseByPatientId = async (req, res, next) => {
+  try {
+    const { patientId, caseId } = req.params;
+    const {
+      chiefComplain,
+      presentIllness,
+      pastHistory,
+      height,
+      weight,
+      temperature,
+      systolicBloodPressure,
+      diastolicBloodPressure,
+      bloodOxygen
+    } = req.body;
+
+    if (
+      !chiefComplain ||
+      !chiefComplain.trim() ||
+      !presentIllness ||
+      !presentIllness.trim() ||
+      !pastHistory ||
+      !pastHistory.trim() ||
+      !height ||
+      !weight ||
+      !temperature ||
+      !systolicBloodPressure ||
+      !diastolicBloodPressure ||
+      !bloodOxygen
+    ) {
+      throw new AppError('ข้อมูลไม่ครบ', 400);
+    }
+
+    const updatedData = {};
+
+    if (chiefComplain && chiefComplain.trim()) {
+      updatedData.chiefComplain = chiefComplain;
+    }
+    if (presentIllness && presentIllness.trim()) {
+      updatedData.presentIllness = presentIllness;
+    }
+    if (pastHistory && pastHistory.trim()) {
+      updatedData.pastHistory = pastHistory;
+    }
+    if (height) {
+      updatedData.height = height;
+    }
+    if (weight) {
+      updatedData.weight = weight;
+    }
+    if (temperature) {
+      updatedData.temperature = temperature;
+    }
+    if (systolicBloodPressure) {
+      updatedData.systolicBloodPressure = systolicBloodPressure;
+    }
+    if (diastolicBloodPressure) {
+      updatedData.diastolicBloodPressure = diastolicBloodPressure;
+    }
+    if (bloodOxygen) {
+      updatedData.bloodOxygen = bloodOxygen;
+    }
+
+    const updatedCase = await Case.update(updatedData, {
+      where: { patientId, id: caseId }
+    });
+
+    if (!updatedCase) {
+      throw new AppError('Case not found or could not be updated', 400);
+    }
+
+    const updatedCaseData = await Case.findOne({
+      where: { id: caseId },
+      attributes: { exclude: ['staffId', 'patientId'] },
+      include: [
+        { model: Staff, attributes: { exclude: 'password' } },
+        { model: Patient, attributes: { exclude: 'password' } }
+      ]
+    });
+
+    res.status(200).json({ updatedCase: updatedCaseData });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getAllCases = async (req, res, next) => {
   try {
     const casesData = await Case.findAll({
