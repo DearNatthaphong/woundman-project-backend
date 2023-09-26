@@ -1,5 +1,13 @@
 const AppError = require('../utils/appError');
-const { Case, Staff, Patient } = require('../models');
+const {
+  Case,
+  Staff,
+  Patient,
+  sequelize,
+  Appointment,
+  Payment,
+  Treatment
+} = require('../models');
 const { Op } = require('sequelize');
 
 exports.createCase = async (req, res, next) => {
@@ -188,6 +196,43 @@ exports.updateCaseByPatientId = async (req, res, next) => {
 
     res.status(200).json({ updatedCase: updatedCaseData });
   } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteCaseByPatientid = async (req, res, next) => {
+  let t;
+
+  try {
+    t = await sequelize.transaction();
+
+    const { patientId, caseId } = req.params;
+    const caseData = await Case.findOne({ where: { id: caseId } });
+    if (!caseData) {
+      throw new AppError('case was not found', 400);
+    }
+    if (+patientId !== caseData.patientId) {
+      console.log('patientId:', patientId);
+      console.log('CaseData.patientId:', caseData.patientId);
+      console.log('caseId:', caseData.id);
+      throw new AppError('no permission to delete', 403);
+    }
+
+    await Appointment.destroy({
+      where: { caseId: caseData.id },
+      transaction: t
+    });
+    await Payment.destroy({ where: { caseId: caseData.id }, transaction: t });
+    await Treatment.destroy({ where: { caseId: caseData.id }, transaction: t });
+    await Case.destroy({ where: { id: caseData.id }, transaction: t });
+
+    await t.commit();
+
+    res.status(200).json({ message: 'success delete' });
+  } catch (err) {
+    if (t && t.finished !== 'commit') {
+      await t.rollback();
+    }
     next(err);
   }
 };
