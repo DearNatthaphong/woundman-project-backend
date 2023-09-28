@@ -10,4 +10,6 @@ router.get('/search', caseController.getSearchCases);
 
 router.route('/:id').get(caseController.getCaseById);
 
+router.route('/:id').patch(caseController.updateCaseByCaseId);
+
 module.exports = router;
