@@ -1,5 +1,7 @@
 const express = require('express');
 const caseController = require('../controllers/caseController');
+const treatmentController = require('../controllers/treatmentController');
+const upload = require('../middlewares/upload');
 
 const router = express.Router();
 
@@ -11,5 +13,9 @@ router.get('/search', caseController.getSearchCases);
 router.route('/:id').get(caseController.getCaseById);
 
 router.route('/:id').patch(caseController.updateCaseByCaseId);
+
+router
+  .route('/:id/treatments')
+  .post(upload.single('image'), treatmentController.createTreatment);
 
 module.exports = router;
