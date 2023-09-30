@@ -1,6 +1,6 @@
 const fs = require('fs');
 const AppError = require('../utils/appError');
-const { Case, Staff, Treatment } = require('../models');
+const { Case, Staff, Treatment, sequelize } = require('../models');
 const cloudinary = require('../utils/cloudinary');
 
 exports.createTreatment = async (req, res, next) => {
@@ -131,6 +131,30 @@ exports.updateTreatmentByCaseId = async (req, res, next) => {
     });
 
     res.status(200).json({ updatedTreatment: updatedTreatmentData });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteTreatmentByCaseId = async (req, res, next) => {
+  try {
+    const { caseId, treatmentId } = req.params;
+
+    const treatmentData = await Treatment.findOne({
+      where: { id: treatmentId }
+    });
+    if (!treatmentData) {
+      throw new AppError('treatment was not found', 400);
+    }
+    if (+caseId !== treatmentData.caseId) {
+      console.log('caseId:', caseId);
+      console.log('treatmentData.caseId:', treatmentData.caseId);
+      throw new AppError('no permission to delete', 403);
+    }
+
+    await Treatment.destroy({ where: { id: treatmentData.id } });
+
+    res.status(200).json({ message: 'success delete' });
   } catch (err) {
     next(err);
   }
