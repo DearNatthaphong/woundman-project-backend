@@ -286,7 +286,7 @@ exports.updateCaseByCaseId = async (req, res, next) => {
   }
 };
 
-exports.deleteCaseByPatientid = async (req, res, next) => {
+exports.deleteCaseByPatientId = async (req, res, next) => {
   let t;
 
   try {

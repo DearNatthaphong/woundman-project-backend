@@ -25,6 +25,6 @@ router.route('/:id/case').post(caseController.createCase);
 router
   .route('/:patientId/cases/:caseId')
   .patch(caseController.updateCaseByPatientId)
-  .delete(caseController.deleteCaseByPatientid);
+  .delete(caseController.deleteCaseByPatientId);
 
 module.exports = router;

@@ -78,3 +78,60 @@ exports.getTreatmentsByCaseId = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateTreatmentByCaseId = async (req, res, next) => {
+  try {
+    const { caseId, treatmentId } = req.params;
+    const { position, diagnosis, treatment } = req.body;
+
+    if (
+      !position ||
+      !position.trim() ||
+      !diagnosis ||
+      !diagnosis.trim() ||
+      !treatment ||
+      !treatment.trim()
+    ) {
+      throw new AppError('ข้อมูลไม่ครบ', 400);
+    }
+
+    const updatedData = {};
+
+    if (position && position.trim()) {
+      updatedData.position = position;
+    }
+    if (diagnosis && diagnosis.trim()) {
+      updatedData.diagnosis = diagnosis;
+    }
+    if (treatment && treatment.trim()) {
+      updatedData.treatment = treatment;
+    }
+    if (req.file) {
+      const imagePath = req.file.path;
+      const image = req.body.image;
+      const secureUrl = await cloudinary.upload(
+        imagePath,
+        image ? cloudinary.getPublicId(image) : undefined
+      );
+
+      updatedData.image = secureUrl;
+      fs.unlinkSync(imagePath);
+    }
+
+    const updatedTreatment = await Treatment.update(updatedData, {
+      where: { caseId, id: treatmentId }
+    });
+
+    if (!updatedTreatment) {
+      throw new AppError('Treatment not found or could not be updated', 400);
+    }
+
+    const updatedTreatmentData = await Treatment.findOne({
+      where: { id: treatmentId }
+    });
+
+    res.status(200).json({ updatedTreatment: updatedTreatmentData });
+  } catch (err) {
+    next(err);
+  }
+};

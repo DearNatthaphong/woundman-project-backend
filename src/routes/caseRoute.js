@@ -20,4 +20,8 @@ router
 
 router.route('/:id/treatments').get(treatmentController.getTreatmentsByCaseId);
 
+router
+  .route('/:caseId/treatments/:treatmentId')
+  .patch(upload.single('image'), treatmentController.updateTreatmentByCaseId);
+
 module.exports = router;
