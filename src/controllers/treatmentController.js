@@ -159,3 +159,45 @@ exports.deleteTreatmentByCaseId = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getAlltreatmentByPatientId = async (req, res, next) => {
+  try {
+    const id = req.user.id;
+    const casesData = await Case.findAll({
+      where: { patientId: id },
+      order: [['createdAt', 'DESC']]
+    });
+
+    //casesData = [caseData1,caseData2,caseData3]
+
+    const allTreatments = [];
+
+    for (const caseItem of casesData) {
+      const caseTreatments = await Treatment.findAll({
+        where: { caseId: caseItem.id },
+        order: [['createdAt', 'DESC']]
+      });
+
+      allTreatments.push(...caseTreatments);
+    }
+
+    res.status(200).json({ allTreatments });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getTreatmentById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const treatment = await Treatment.findOne({ where: { id } });
+    if (!treatment) {
+      throw new AppError('Data not found', 400);
+    }
+
+    res.status(200).json({ treatment });
+  } catch (err) {
+    next(err);
+  }
+};
