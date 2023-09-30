@@ -18,4 +18,6 @@ router
   .route('/:id/treatments')
   .post(upload.single('image'), treatmentController.createTreatment);
 
+router.route('/:id/treatments').get(treatmentController.getTreatmentsByCaseId);
+
 module.exports = router;

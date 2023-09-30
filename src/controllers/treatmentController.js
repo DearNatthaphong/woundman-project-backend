@@ -59,3 +59,22 @@ exports.createTreatment = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getTreatmentsByCaseId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const caseData = await Case.findOne({ where: { id } });
+    if (!caseData) {
+      throw new AppError('Data not found', 400);
+    }
+
+    const treatments = await Treatment.findAll({
+      where: { caseId: id },
+      attributes: { exclude: ['caseId'] },
+      order: [['createdAt', 'DESC']]
+    });
+    res.status(200).json({ treatments });
+  } catch (err) {
+    next(err);
+  }
+};
