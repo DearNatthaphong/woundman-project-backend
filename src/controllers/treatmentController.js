@@ -13,7 +13,8 @@ exports.createTreatment = async (req, res, next) => {
       !diagnosis ||
       !diagnosis.trim() ||
       !treatment ||
-      !treatment.trim()
+      !treatment.trim() ||
+      !req.file
     ) {
       throw new AppError('ข้อมูลไม่ครบ', 400);
     }
@@ -33,16 +34,19 @@ exports.createTreatment = async (req, res, next) => {
       data.treatment = treatment;
     }
     if (req.file) {
-      const imagePath = req.file.path;
-      const image = req.body.image;
-      const secureUrl = await cloudinary.upload(
-        imagePath,
-        image ? cloudinary.getPublicId(image) : undefined
-      );
-
-      data.image = secureUrl;
-      fs.unlinkSync(imagePath);
+      data.image = await cloudinary.upload(req.file.path);
     }
+    // {
+    //   const imagePath = req.file.path;
+    //   const image = req.body.image;
+    //   const secureUrl = await cloudinary.upload(
+    //     imagePath,
+    //     image ? cloudinary.getPublicId(image) : undefined
+    //   );
+
+    //   data.image = secureUrl;
+    //   fs.unlinkSync(imagePath);
+    // }
 
     const newTreatment = await Treatment.create({ ...data, staffId });
     const newTreatmentData = await Treatment.findOne({
@@ -57,6 +61,10 @@ exports.createTreatment = async (req, res, next) => {
     res.status(200).json({ newTreatment: newTreatmentData });
   } catch (err) {
     next(err);
+  } finally {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 };
 
