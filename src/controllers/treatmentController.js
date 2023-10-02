@@ -2,6 +2,7 @@ const fs = require('fs');
 const AppError = require('../utils/appError');
 const { Case, Staff, Treatment, sequelize } = require('../models');
 const cloudinary = require('../utils/cloudinary');
+const validator = require('validator');
 
 exports.createTreatment = async (req, res, next) => {
   try {
@@ -90,7 +91,7 @@ exports.getTreatmentsByCaseId = async (req, res, next) => {
 exports.updateTreatmentByCaseId = async (req, res, next) => {
   try {
     const { caseId, treatmentId } = req.params;
-    const { position, diagnosis, treatment } = req.body;
+    const { position, diagnosis, treatment, image } = req.body;
 
     if (
       !position ||
@@ -99,7 +100,7 @@ exports.updateTreatmentByCaseId = async (req, res, next) => {
       !diagnosis.trim() ||
       !treatment ||
       !treatment.trim() ||
-      !req.file
+      !image
     ) {
       throw new AppError('ข้อมูลไม่ครบ', 400);
     }
@@ -115,7 +116,11 @@ exports.updateTreatmentByCaseId = async (req, res, next) => {
     if (treatment && treatment.trim()) {
       updatedData.treatment = treatment;
     }
-    if (req.file) {
+
+    const isValidURL = validator.isURL(image + '');
+    if (isValidURL) {
+      updatedData.image = image;
+    } else if (req.file) {
       updatedData.image = await cloudinary.upload(req.file.path);
     }
     // {
