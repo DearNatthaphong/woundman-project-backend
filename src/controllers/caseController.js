@@ -340,6 +340,31 @@ exports.getAllCases = async (req, res, next) => {
   }
 };
 
+exports.getCasesWithoutTreatment = async (req, res, next) => {
+  try {
+    const casesWithoutTreatment = await Case.findAll({
+      attributes: { exclude: ['staffId', 'patientId'] },
+      where: {
+        '$Treatments.id$': null
+      },
+      include: [
+        { model: Staff, attributes: { exclude: 'password' } },
+        { model: Patient, attributes: { exclude: 'password' } },
+        {
+          model: Treatment,
+          required: false,
+          as: 'Treatments'
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ cases: casesWithoutTreatment });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getCaseById = async (req, res, next) => {
   try {
     const { id } = req.params;

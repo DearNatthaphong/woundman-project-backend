@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.route('/').get(caseController.getAllCases);
 
+router.route('/without-treatment').get(caseController.getCasesWithoutTreatment);
+
 router.get('/search', caseController.getSearchCases);
 // router.route('/search').get(caseController.getSearchCases);
 

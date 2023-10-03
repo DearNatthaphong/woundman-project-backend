@@ -99,8 +99,7 @@ exports.updateTreatmentByCaseId = async (req, res, next) => {
       !diagnosis ||
       !diagnosis.trim() ||
       !treatment ||
-      !treatment.trim() ||
-      !image
+      !treatment.trim()
     ) {
       throw new AppError('ข้อมูลไม่ครบ', 400);
     }
@@ -123,17 +122,6 @@ exports.updateTreatmentByCaseId = async (req, res, next) => {
     } else if (req.file) {
       updatedData.image = await cloudinary.upload(req.file.path);
     }
-    // {
-    //   const imagePath = req.file.path;
-    //   const image = req.body.image;
-    //   const secureUrl = await cloudinary.upload(
-    //     imagePath,
-    //     image ? cloudinary.getPublicId(image) : undefined
-    //   );
-
-    //   updatedData.image = secureUrl;
-    //   fs.unlinkSync(imagePath);
-    // }
 
     const updatedTreatment = await Treatment.update(updatedData, {
       where: { caseId, id: treatmentId }
@@ -181,28 +169,22 @@ exports.deleteTreatmentByCaseId = async (req, res, next) => {
   }
 };
 
-exports.getAlltreatmentByPatientId = async (req, res, next) => {
+exports.getAllTreatmentByPatientId = async (req, res, next) => {
   try {
-    const id = req.user.id;
-    const casesData = await Case.findAll({
-      where: { patientId: id },
+    const patientId = req.user.id;
+
+    const allTreatments = await Treatment.findAll({
+      include: [
+        {
+          model: Case,
+          attributes: ['chiefComplain'],
+          where: { patientId }
+        }
+      ],
       order: [['createdAt', 'DESC']]
     });
 
-    //casesData = [caseData1,caseData2,caseData3]
-
-    const allTreatments = [];
-
-    for (const caseItem of casesData) {
-      const caseTreatments = await Treatment.findAll({
-        where: { caseId: caseItem.id },
-        order: [['createdAt', 'DESC']]
-      });
-
-      allTreatments.push(...caseTreatments);
-    }
-
-    res.status(200).json({ allTreatments });
+    res.status(200).json({ treatments: allTreatments });
   } catch (err) {
     next(err);
   }
@@ -212,12 +194,12 @@ exports.getTreatmentById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const treatment = await Treatment.findOne({ where: { id } });
-    if (!treatment) {
+    const treatmentData = await Treatment.findOne({ where: { id } });
+    if (!treatmentData) {
       throw new AppError('Data not found', 400);
     }
 
-    res.status(200).json({ treatment });
+    res.status(200).json({ treatment: treatmentData });
   } catch (err) {
     next(err);
   }
