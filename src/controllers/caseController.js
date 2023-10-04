@@ -392,7 +392,7 @@ exports.getCaseById = async (req, res, next) => {
 exports.getSearchCases = async (req, res, next) => {
   try {
     const { searchTerm } = req.query;
-    console.log('Search Term:', searchTerm);
+    // console.log('Search Term:', searchTerm);
 
     const casesData = await Case.findAll({
       //GET ALL CASES WHERE searchTERM include firstName or LastName

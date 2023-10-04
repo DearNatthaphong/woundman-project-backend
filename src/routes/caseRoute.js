@@ -28,8 +28,6 @@ router
   .patch(upload.single('image'), treatmentController.updateTreatmentByCaseId)
   .delete(treatmentController.deleteTreatmentByCaseId);
 
-module.exports = router;
-
 router.route('/:id/appointment').post(appointmentController.createAppointment);
 
 router
@@ -40,3 +38,5 @@ router
   .route('/:caseId/appointment/:appointmentId')
   .patch(appointmentController.updateAppointmentByCaseId)
   .delete(appointmentController.deleteAppointmentByCaseId);
+
+module.exports = router;

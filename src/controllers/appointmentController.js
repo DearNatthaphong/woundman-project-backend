@@ -1,4 +1,4 @@
-const { Appointment, Case } = require('../models');
+const { Appointment, Case, Patient } = require('../models');
 const AppError = require('../utils/appError');
 const validator = require('validator');
 
@@ -139,6 +139,55 @@ exports.deleteAppointmentByCaseId = async (req, res, next) => {
     await Appointment.destroy({ where: { id: appointmentData.id } });
 
     res.status(200).json({ message: 'success delete' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAppointments = async (req, res, next) => {
+  try {
+    const appointmentsData = await Appointment.findAll({
+      attibutes: { exclude: ['caseId'] },
+      include: [
+        {
+          model: Case,
+          attributes: ['chiefComplain'],
+          include: [{ model: Patient, attributes: { exclude: 'password' } }]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ appointments: appointmentsData });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAppointmentsByFilter = async (req, res, next) => {
+  try {
+    const { status } = req.query;
+
+    const appointmentsData = await Appointment.findAll({
+      where: { status },
+      attibutes: { exclude: ['caseId'] },
+      include: [
+        {
+          model: Case,
+          attributes: ['chiefComplain'],
+          include: [{ model: Patient, attributes: { exclude: 'password' } }]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (appointmentsData.length === 0) {
+      return res
+        .status(404)
+        .json({ message: 'No matching appointments found.' });
+    }
+
+    res.status(200).json({ appointments: appointmentsData });
   } catch (err) {
     next(err);
   }
