@@ -1,6 +1,7 @@
 const express = require('express');
 const caseController = require('../controllers/caseController');
 const treatmentController = require('../controllers/treatmentController');
+const appointmentController = require('../controllers/appointmentController');
 const upload = require('../middlewares/upload');
 
 const router = express.Router();
@@ -28,3 +29,5 @@ router
   .delete(treatmentController.deleteTreatmentByCaseId);
 
 module.exports = router;
+
+router.route('/:id/appointments').post(appointmentController.createAppointment);
