@@ -30,4 +30,8 @@ router
 
 module.exports = router;
 
-router.route('/:id/appointments').post(appointmentController.createAppointment);
+router.route('/:id/appointment').post(appointmentController.createAppointment);
+
+router
+  .route('/:id/appointment')
+  .get(appointmentController.getAppointmentByCaseId);

@@ -1,4 +1,4 @@
-const { Appointment } = require('../models');
+const { Appointment, Case } = require('../models');
 const AppError = require('../utils/appError');
 const validator = require('validator');
 
@@ -54,6 +54,26 @@ exports.createAppointment = async (req, res, next) => {
     });
 
     res.status(200).json({ newAppointment: newAppointmentData });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAppointmentByCaseId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const caseData = await Case.findOne({ where: { id } });
+    if (!caseData) {
+      throw new AppError('Data not found', 400);
+    }
+
+    const appointment = await Appointment.findOne({
+      where: { caseId: id },
+      //   attributes: {exclude: ['caseId','staffId']},
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ appointment });
   } catch (err) {
     next(err);
   }
