@@ -233,3 +233,31 @@ exports.updateAppointmentById = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getAppointmentByPatientId = async (req, res, next) => {
+  try {
+    const patientId = req.user.id;
+
+    const appointmentsData = await Appointment.findAll({
+      attibutes: { exclude: ['caseId'] },
+      include: [
+        {
+          model: Case,
+          where: { patientId },
+          attributes: ['chiefComplain'],
+          include: [
+            {
+              model: Patient,
+              attributes: { exclude: 'password' }
+            }
+          ]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ appointments: appointmentsData });
+  } catch (err) {
+    next(err);
+  }
+};

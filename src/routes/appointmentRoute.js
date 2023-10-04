@@ -23,4 +23,11 @@ router
     appointmentController.updateAppointmentById
   );
 
+router
+  .route('/patient')
+  .get(
+    authenticate.authorizePatient,
+    appointmentController.getAppointmentByPatientId
+  );
+
 module.exports = router;
