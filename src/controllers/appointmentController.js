@@ -78,3 +78,44 @@ exports.getAppointmentByCaseId = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateAppointmentByCaseId = async (req, res, next) => {
+  try {
+    const { caseId, appointmentId } = req.params;
+    const { reason, appointmentDate, status } = req.body;
+
+    if (!reason || !reason.trim() || !appointmentDate || !status) {
+      throw new AppError('ข้อมูลไม่ครบ', 400);
+    }
+
+    const updatedData = {};
+
+    if (reason && reason.trim()) {
+      updatedData.reason = reason;
+    }
+    const isDate = validator.isDate(appointmentDate, new Date());
+
+    if (isDate) {
+      updatedData.appointmentDate = appointmentDate;
+    }
+    if (status) {
+      updatedData.status = status;
+    }
+
+    const updatedAppointment = await Appointment.update(updatedData, {
+      where: { caseId, id: appointmentId }
+    });
+
+    if (!updatedAppointment) {
+      throw new AppError('Appointment not found or could not be updated', 400);
+    }
+
+    const updatedAppointmentData = await Appointment.findOne({
+      where: { id: appointmentId }
+    });
+
+    res.status(200).json({ updatedAppointment: updatedAppointmentData });
+  } catch (err) {
+    next(err);
+  }
+};

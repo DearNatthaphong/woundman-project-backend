@@ -35,3 +35,7 @@ router.route('/:id/appointment').post(appointmentController.createAppointment);
 router
   .route('/:id/appointment')
   .get(appointmentController.getAppointmentByCaseId);
+
+router
+  .route('/:caseId/appointment/:appointmentId')
+  .patch(appointmentController.updateAppointmentByCaseId);
