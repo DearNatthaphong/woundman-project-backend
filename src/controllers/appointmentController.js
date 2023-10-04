@@ -119,3 +119,27 @@ exports.updateAppointmentByCaseId = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deleteAppointmentByCaseId = async (req, res, next) => {
+  try {
+    const { caseId, appointmentId } = req.params;
+
+    const appointmentData = await Appointment.findOne({
+      where: { id: appointmentId }
+    });
+    if (!appointmentData) {
+      throw new AppError('appointment was not found', 400);
+    }
+    if (+caseId !== appointmentData.caseId) {
+      console.log('caseId:', caseId);
+      console.log('appointmentData.caseId:', appointmentData.caseId);
+      throw new AppError('no permission to delete', 403);
+    }
+
+    await Appointment.destroy({ where: { id: appointmentData.id } });
+
+    res.status(200).json({ message: 'success delete' });
+  } catch (err) {
+    next(err);
+  }
+};

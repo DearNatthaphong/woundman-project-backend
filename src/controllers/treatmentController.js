@@ -156,8 +156,6 @@ exports.deleteTreatmentByCaseId = async (req, res, next) => {
       throw new AppError('treatment was not found', 400);
     }
     if (+caseId !== treatmentData.caseId) {
-      console.log('caseId:', caseId);
-      console.log('treatmentData.caseId:', treatmentData.caseId);
       throw new AppError('no permission to delete', 403);
     }
 

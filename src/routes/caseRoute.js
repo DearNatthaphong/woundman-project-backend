@@ -38,4 +38,5 @@ router
 
 router
   .route('/:caseId/appointment/:appointmentId')
-  .patch(appointmentController.updateAppointmentByCaseId);
+  .patch(appointmentController.updateAppointmentByCaseId)
+  .delete(appointmentController.deleteAppointmentByCaseId);
