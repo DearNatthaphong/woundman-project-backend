@@ -16,4 +16,11 @@ router
     appointmentController.getAppointmentsByFilter
   );
 
+router
+  .route('/:id')
+  .patch(
+    authenticate.authorizeStaff,
+    appointmentController.updateAppointmentById
+  );
+
 module.exports = router;
