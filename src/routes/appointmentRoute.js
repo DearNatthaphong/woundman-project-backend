@@ -17,6 +17,13 @@ router
   );
 
 router
+  .route('/patients/search')
+  .get(
+    authenticate.authorizeStaff,
+    appointmentController.getAppointmentsBySearch
+  );
+
+router
   .route('/:id')
   .patch(
     authenticate.authorizeStaff,

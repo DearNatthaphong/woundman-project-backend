@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Appointment, Case, Patient } = require('../models');
 const AppError = require('../utils/appError');
 const validator = require('validator');
@@ -176,6 +177,54 @@ exports.getAppointmentsByFilter = async (req, res, next) => {
           model: Case,
           attributes: ['chiefComplain'],
           include: [{ model: Patient, attributes: { exclude: 'password' } }]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (appointmentsData.length === 0) {
+      return res
+        .status(404)
+        .json({ message: 'No matching appointments found.' });
+    }
+
+    res.status(200).json({ appointments: appointmentsData });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAppointmentsBySearch = async (req, res, next) => {
+  try {
+    const { searchTerm } = req.query;
+
+    const appointmentsData = await Appointment.findAll({
+      where: {
+        [Op.or]: [
+          {
+            '$Case.Patient.first_name$': {
+              [Op.like]: `%${searchTerm}%`
+            }
+          },
+          {
+            '$Case.Patient.last_name$': {
+              [Op.like]: `%${searchTerm}%`
+            }
+          }
+        ]
+      },
+      attibutes: { exclude: ['caseId'] },
+      include: [
+        {
+          model: Case,
+          attributes: ['chiefComplain'],
+          include: [
+            {
+              model: Patient,
+              attributes: { exclude: ['password'] },
+              as: 'Patient'
+            }
+          ]
         }
       ],
       order: [['createdAt', 'DESC']]
