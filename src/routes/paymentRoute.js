@@ -8,4 +8,8 @@ router.route('/cases-no-receipt').get(paymentController.getCasesNoReceipt);
 
 router.route('/cases-no-receipt/:id').get(caseController.getCaseById);
 
+router
+  .route('/payment-items')
+  .get(paymentController.getPaymentItemsByPaymentType);
+
 module.exports = router;
