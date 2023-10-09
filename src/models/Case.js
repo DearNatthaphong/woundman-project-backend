@@ -113,6 +113,14 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'RESTRICT',
       onUpdate: 'RESTRICT'
     });
+    Case.hasOne(db.Receipt, {
+      foreignKey: {
+        name: 'caseId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
   };
 
   return Case;

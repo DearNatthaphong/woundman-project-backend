@@ -8,6 +8,13 @@ module.exports = (sequelize, DataTypes) => {
   const Receipt = sequelize.define(
     'Receipt',
     {
+      totalPrice: {
+        type: DataTypes.DECIMAL(7, 2),
+        allowNull: false,
+        validate: {
+          notEmpty: true
+        }
+      },
       method: {
         type: DataTypes.ENUM(PAYMENT_CASH, PAYMENT_TRANSFER, PAYMENT_CARD),
         allowNull: false,
@@ -26,6 +33,16 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'RESTRICT',
       onUpdate: 'RESTRICT'
     });
+
+    Receipt.belongsTo(db.Case, {
+      foreignKey: {
+        name: 'caseId',
+        allowNull: false
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT'
+    });
+
     Receipt.hasMany(db.Payment, {
       foreignKey: {
         name: 'receiptId',

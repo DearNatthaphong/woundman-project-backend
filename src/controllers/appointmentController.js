@@ -183,9 +183,15 @@ exports.getAppointmentsByFilter = async (req, res, next) => {
     });
 
     if (appointmentsData.length === 0) {
-      return res
-        .status(404)
-        .json({ message: 'No matching appointments found.' });
+      return (
+        res
+          .status(200)
+          // .json({ message: 'No matching appointments found.' });
+          .json({
+            message: 'No matching appointments found.',
+            appointments: []
+          })
+      );
     }
 
     res.status(200).json({ appointments: appointmentsData });
@@ -283,7 +289,7 @@ exports.updateAppointmentById = async (req, res, next) => {
   }
 };
 
-exports.getAppointmentByPatientId = async (req, res, next) => {
+exports.getAppointmentsByPatientId = async (req, res, next) => {
   try {
     const patientId = req.user.id;
 

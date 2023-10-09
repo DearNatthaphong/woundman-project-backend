@@ -34,7 +34,7 @@ router
   .route('/patient')
   .get(
     authenticate.authorizePatient,
-    appointmentController.getAppointmentByPatientId
+    appointmentController.getAppointmentsByPatientId
   );
 
 module.exports = router;

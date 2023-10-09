@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const PaymentType = sequelize.define(
     'PaymentType',
     {
-      name: {
+      title: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {

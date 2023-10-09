@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const PaymentItem = sequelize.define(
     'PaymentItem',
     {
-      name: {
+      title: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       onDelete: 'RESTRICT',
-      onUpdate: 'RESTRICT'
+      onUpdate: 'CASCADE' // Change 'RESTRICT' to 'CASCADE' For
     });
     PaymentItem.hasMany(db.Payment, {
       foreignKey: {
