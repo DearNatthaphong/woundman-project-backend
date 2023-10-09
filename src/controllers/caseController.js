@@ -369,8 +369,10 @@ exports.getCaseById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    const caseId = parseInt(id, 10);
+
     const caseData = await Case.findOne({
-      where: { id },
+      where: { id: caseId },
       attributes: { exclude: ['staffId', 'patientId'] },
       include: [
         { model: Staff, attributes: { exclude: ['password'] } },
