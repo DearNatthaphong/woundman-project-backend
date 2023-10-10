@@ -1,19 +1,15 @@
 const validator = require('validator');
+const AppError = require('../utils/appError');
 const {
   Receipt,
   Case,
   Patient,
   Payment,
   PaymentItem,
-  PaymentType,
-  Sequelize
+  PaymentType
 } = require('../models');
-const AppError = require('../utils/appError');
-const { Op } = require('sequelize');
-const sequelize = require('sequelize');
+// const { Op } = require('sequelize');
 
-// Enable Sequelize query logging
-sequelize.options.logging = console.log;
 exports.getCasesNoReceipt = async (req, res, next) => {
   try {
     const casesNoReceipt = await Case.findAll({
@@ -163,8 +159,80 @@ exports.getPaymentsTypeService = async (req, res, next) => {
       return res.status(404).json({ message: 'No matching payment found.' });
     }
 
-    res.status(200).json({ paymentsService: payments });
+    res.status(200).json({ paymentsByTypeService: payments });
   } catch (err) {
     next(err);
   }
 };
+
+exports.deletePaymentsTypeServiceByPaymentId = async (req, res, next) => {
+  try {
+    const { caseId, paymentId } = req.params;
+
+    const caseIdNumber = parseInt(caseId, 10);
+    const paymentIdNumber = parseInt(paymentId, 10);
+
+    const paymentData = await Payment.findOne({
+      where: { id: paymentIdNumber }
+    });
+
+    if (!paymentData) {
+      throw new AppError('Payment was not found', 400);
+    }
+
+    if (caseIdNumber !== paymentData.caseId) {
+      console.log('caseIdNumber:', caseIdNumber);
+      console.log('paymentData.caseId:', paymentData.caseId);
+      throw new AppError('No permission to delete', 403);
+    }
+
+    await Payment.destroy({ where: { id: paymentData.id } });
+
+    res.status(200).json({ message: 'Success delete' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// exports.updatePaymentsTypeServiceByPaymentId = async (req, res, next) => {
+//   try {
+//     const { caseId, paymentId } = req.params;
+//     const {
+//       amount
+//     } = req.body;
+
+//     const { paymentItemTitle } = req.query;
+
+//     const isNumber = validator.isNumeric(amount + '');
+
+//     if (!amount || !isNumber || !paymentItemTitle || !paymentItemTitle.trim()) {
+//       throw new AppError('ข้อมูลไม่ครบหรือข้อมูลไม่ถูกต้อง', 400);
+//     }
+
+//     if (amount && isNumber) {
+//       data.amount = amount;
+//     }
+//     const updatedData = {};
+
+//     const updatedCase = await Case.update(updatedData, {
+//       where: {  }
+//     });
+
+//     if (!updatedCase) {
+//       throw new AppError('Case not found or could not be updated', 400);
+//     }
+
+//     const updatedCaseData = await Case.findOne({
+//       where: { id: caseId },
+//       attributes: { exclude: ['staffId', 'patientId'] },
+//       include: [
+//         { model: Staff, attributes: { exclude: 'password' } },
+//         { model: Patient, attributes: { exclude: 'password' } }
+//       ]
+//     });
+
+//     res.status(200).json({ updatedCase: updatedCaseData });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
