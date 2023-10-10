@@ -8,7 +8,7 @@ const {
   PaymentItem,
   PaymentType
 } = require('../models');
-// const { Op } = require('sequelize');
+const { Op } = require('sequelize');
 
 exports.getCasesNoReceipt = async (req, res, next) => {
   try {
@@ -194,45 +194,58 @@ exports.deletePaymentsTypeServiceByPaymentId = async (req, res, next) => {
   }
 };
 
-// exports.updatePaymentsTypeServiceByPaymentId = async (req, res, next) => {
-//   try {
-//     const { caseId, paymentId } = req.params;
-//     const {
-//       amount
-//     } = req.body;
+exports.updatePaymentsTypeServiceByPaymentId = async (req, res, next) => {
+  try {
+    const { amount } = req.body;
 
-//     const { paymentItemTitle } = req.query;
+    const { paymentItemTitle } = req.query;
 
-//     const isNumber = validator.isNumeric(amount + '');
+    const isNumber = validator.isNumeric(amount);
 
-//     if (!amount || !isNumber || !paymentItemTitle || !paymentItemTitle.trim()) {
-//       throw new AppError('ข้อมูลไม่ครบหรือข้อมูลไม่ถูกต้อง', 400);
-//     }
+    if (!amount || !isNumber || !paymentItemTitle || !paymentItemTitle.trim()) {
+      throw new AppError('ข้อมูลไม่ครบหรือข้อมูลไม่ถูกต้อง', 400);
+    }
 
-//     if (amount && isNumber) {
-//       data.amount = amount;
-//     }
-//     const updatedData = {};
+    const { caseId, paymentId } = req.params;
+    const caseIdNumber = parseInt(caseId, 10);
+    const paymentIdNumber = parseInt(paymentId, 10);
+    // const receiptId = null;
+    const updatedData = { caseIdNumber };
 
-//     const updatedCase = await Case.update(updatedData, {
-//       where: {  }
-//     });
+    if (amount && isNumber) {
+      updatedData.amount = amount;
+    }
 
-//     if (!updatedCase) {
-//       throw new AppError('Case not found or could not be updated', 400);
-//     }
+    if (paymentItemTitle && paymentItemTitle.trim()) {
+      const paymentItem = await PaymentItem.findOne({
+        where: { title: paymentItemTitle }
+      });
 
-//     const updatedCaseData = await Case.findOne({
-//       where: { id: caseId },
-//       attributes: { exclude: ['staffId', 'patientId'] },
-//       include: [
-//         { model: Staff, attributes: { exclude: 'password' } },
-//         { model: Patient, attributes: { exclude: 'password' } }
-//       ]
-//     });
+      if (!paymentItem) {
+        throw new AppError('PaymentItem not found', 400);
+      }
 
-//     res.status(200).json({ updatedCase: updatedCaseData });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+      if (paymentItem) {
+        updatedData.paymentItemId = paymentItem.id;
+        const calculatePrice = amount * paymentItem.price;
+        updatedData.price = calculatePrice;
+      }
+    }
+
+    const updatedPayment = await Payment.update(updatedData, {
+      where: { [Op.and]: [{ id: paymentIdNumber }, { caseId: caseIdNumber }] }
+    });
+
+    if (!updatedPayment) {
+      throw new AppError('Payment not found or could not be updated', 400);
+    }
+
+    const updatedPaymentData = await Payment.findOne({
+      where: { id: paymentIdNumber }
+    });
+
+    res.status(200).json({ updatedPayment: updatedPaymentData });
+  } catch (err) {
+    next(err);
+  }
+};
