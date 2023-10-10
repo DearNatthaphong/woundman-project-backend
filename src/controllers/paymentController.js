@@ -5,10 +5,15 @@ const {
   Patient,
   Payment,
   PaymentItem,
-  PaymentType
+  PaymentType,
+  Sequelize
 } = require('../models');
 const AppError = require('../utils/appError');
+const { Op } = require('sequelize');
+const sequelize = require('sequelize');
 
+// Enable Sequelize query logging
+sequelize.options.logging = console.log;
 exports.getCasesNoReceipt = async (req, res, next) => {
   try {
     const casesNoReceipt = await Case.findAll({
@@ -121,6 +126,44 @@ exports.createPaymentTypeService = async (req, res, next) => {
     });
 
     res.status(201).json({ newPayment });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getPaymentsTypeService = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const caseId = parseInt(id, 10);
+    const { paymentTypeTitle } = req.query;
+
+    const payments = await Payment.findAll({
+      where: {
+        caseId
+      },
+      // attributes: { exclude: ['paymentItemId'] },
+      include: [
+        {
+          model: PaymentItem,
+          attributes: ['title'],
+          include: [
+            {
+              model: PaymentType,
+              attributes: ['title'],
+              where: {
+                title: paymentTypeTitle
+              }
+            }
+          ]
+        }
+      ]
+    });
+
+    if (payments.length === 0) {
+      return res.status(404).json({ message: 'No matching payment found.' });
+    }
+
+    res.status(200).json({ paymentsService: payments });
   } catch (err) {
     next(err);
   }

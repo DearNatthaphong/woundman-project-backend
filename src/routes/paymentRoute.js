@@ -17,4 +17,8 @@ router
   .route('/cases-no-receipt/:id/payment')
   .post(paymentController.createPaymentTypeService);
 
+router
+  .route('/cases-no-receipt/:id/payment')
+  .get(paymentController.getPaymentsTypeService);
+
 module.exports = router;
