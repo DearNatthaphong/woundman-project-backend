@@ -57,25 +57,34 @@ exports.getCaseNoReceiptById = async (req, res, next) => {
 exports.getPaymentItemsByPaymentType = async (req, res, next) => {
   try {
     const { paymentTypeTitle } = req.query;
-    const paymentTypeItems = await PaymentItem.findAll({
-      attributes: { exclude: ['paymentTypeId'] },
-      include: [{ model: PaymentType, where: { title: paymentTypeTitle } }],
-      order: [['createdAt', 'DESC']]
+
+    const paymentType = await PaymentType.findOne({
+      where: { title: paymentTypeTitle }
     });
 
-    if (paymentTypeItems.length === 0) {
+    const paymentItemsData = await PaymentItem.findAll({
+      where: { paymentTypeId: paymentType.id }
+    });
+
+    // const paymentTypeItems = await PaymentItem.findAll({
+    //   attributes: { exclude: ['paymentTypeId'] },
+    //   include: [{ model: PaymentType, where: { title: paymentTypeTitle } }],
+    //   order: [['createdAt', 'DESC']]
+    // });
+
+    if (paymentItemsData.length === 0) {
       return res
         .status(404)
         .json({ message: 'No matching paymentItems found.' });
     }
 
-    res.status(200).json({ paymentItemsService: paymentTypeItems });
+    res.status(200).json({ paymentItems: paymentItemsData });
   } catch (err) {
     next(err);
   }
 };
 
-exports.createPaymentTypeService = async (req, res, next) => {
+exports.createPayment = async (req, res, next) => {
   try {
     const { amount } = req.body;
 
@@ -127,11 +136,21 @@ exports.createPaymentTypeService = async (req, res, next) => {
   }
 };
 
-exports.getPaymentsTypeService = async (req, res, next) => {
+exports.getPaymentsByType = async (req, res, next) => {
   try {
     const { id } = req.params;
     const caseId = parseInt(id, 10);
     const { paymentTypeTitle } = req.query;
+
+    const paymentType = await PaymentType.findOne({
+      where: { title: paymentTypeTitle }
+    });
+
+    const paymentItems = await PaymentItem.findAll({
+      where: { paymentTypeId: paymentType.id }
+    });
+
+    const itemsTitleArray = paymentItems.map((item) => item.title);
 
     const payments = await Payment.findAll({
       where: {
@@ -141,16 +160,8 @@ exports.getPaymentsTypeService = async (req, res, next) => {
       include: [
         {
           model: PaymentItem,
-          attributes: ['title'],
-          include: [
-            {
-              model: PaymentType,
-              attributes: ['title'],
-              where: {
-                title: paymentTypeTitle
-              }
-            }
-          ]
+          where: { title: itemsTitleArray },
+          attributes: ['title']
         }
       ]
     });
@@ -159,7 +170,7 @@ exports.getPaymentsTypeService = async (req, res, next) => {
       return res.status(404).json({ message: 'No matching payment found.' });
     }
 
-    res.status(200).json({ paymentsByTypeService: payments });
+    res.status(200).json({ paymentsByType: payments });
   } catch (err) {
     next(err);
   }

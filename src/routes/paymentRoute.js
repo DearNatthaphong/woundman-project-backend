@@ -15,11 +15,11 @@ router
 
 router
   .route('/cases-no-receipt/:id/payment')
-  .post(paymentController.createPaymentTypeService);
+  .post(paymentController.createPayment);
 
 router
   .route('/cases-no-receipt/:id/payment')
-  .get(paymentController.getPaymentsTypeService);
+  .get(paymentController.getPaymentsByType);
 
 router
   .route('/cases-no-receipt/:caseId/payment/:paymentId')
