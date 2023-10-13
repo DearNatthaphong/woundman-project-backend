@@ -13,6 +13,7 @@ const caseRoute = require('./routes/caseRoute');
 const treatmentRoute = require('./routes/treatmentRoute');
 const appointmentRoute = require('./routes/appointmentRoute');
 const paymentRoute = require('./routes/paymentRoute');
+const receiptRoute = require('./routes/receiptRoute');
 const notFound = require('./middlewares/notFound');
 const error = require('./middlewares/error');
 const authenticate = require('./middlewares/authenticate');
@@ -34,6 +35,7 @@ app.use('/cases', authenticate.authorizeStaff, caseRoute);
 app.use('/treatments', authenticate.authorizePatient, treatmentRoute);
 app.use('/appointments', appointmentRoute);
 app.use('/payments', authenticate.authorizeStaff, paymentRoute);
+app.use('/receipts', authenticate.authorizeStaff, receiptRoute);
 
 app.use(notFound);
 app.use(error);
