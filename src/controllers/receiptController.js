@@ -1,4 +1,11 @@
-const { Receipt, Payment, sequelize, PaymentItem } = require('../models');
+const {
+  Receipt,
+  Payment,
+  sequelize,
+  PaymentItem,
+  Patient,
+  Case
+} = require('../models');
 const AppError = require('../utils/appError');
 
 exports.createReceiptByCaseId = async (req, res, next) => {
@@ -132,6 +139,34 @@ exports.deleteReceiptByCaseIdReceiptId = async (req, res, next) => {
     res.status(200).json({ message: 'Success delete' });
   } catch (err) {
     if (t) await t.rollback();
+    next(err);
+  }
+};
+
+exports.getReceiptsByPatientId = async (req, res, next) => {
+  try {
+    const patientId = req.user.id;
+
+    const receiptsData = await Receipt.findAll({
+      attibutes: { exclude: ['caseId'] },
+      include: [
+        {
+          model: Case,
+          where: { patientId },
+          attributes: ['chiefComplain'],
+          include: [
+            {
+              model: Patient,
+              attributes: { exclude: 'password' }
+            }
+          ]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.status(200).json({ receipts: receiptsData });
+  } catch (err) {
     next(err);
   }
 };

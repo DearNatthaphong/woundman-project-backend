@@ -35,7 +35,7 @@ app.use('/cases', authenticate.authorizeStaff, caseRoute);
 app.use('/treatments', authenticate.authorizePatient, treatmentRoute);
 app.use('/appointments', appointmentRoute);
 app.use('/payments', authenticate.authorizeStaff, paymentRoute);
-app.use('/receipts', authenticate.authorizeStaff, receiptRoute);
+app.use('/receipts', receiptRoute);
 
 app.use(notFound);
 app.use(error);
