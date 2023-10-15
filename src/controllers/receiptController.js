@@ -1,4 +1,4 @@
-const { Receipt, Payment, sequelize } = require('../models');
+const { Receipt, Payment, sequelize, PaymentItem } = require('../models');
 const AppError = require('../utils/appError');
 
 exports.createReceiptByCaseId = async (req, res, next) => {
@@ -62,11 +62,24 @@ exports.getReceiptByCaseId = async (req, res, next) => {
     const caseIdNumber = parseInt(id, 10);
 
     const receiptData = await Receipt.findOne({
-      where: { caseId: caseIdNumber }
+      where: { caseId: caseIdNumber },
+      include: [
+        {
+          model: Payment,
+          attributes: ['amount', 'price'],
+          include: [
+            {
+              model: PaymentItem,
+              attributes: ['title']
+            }
+          ]
+        }
+      ]
     });
 
     if (!receiptData) {
-      throw new AppError('Receipt was not found', 400);
+      res.status(200).json({ message: 'Receipt was not found', receipt: {} });
+      return;
     }
 
     if (caseIdNumber !== receiptData.caseId) {

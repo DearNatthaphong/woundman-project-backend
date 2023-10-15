@@ -6,7 +6,8 @@ const {
   sequelize,
   Appointment,
   Payment,
-  Treatment
+  Treatment,
+  Receipt
 } = require('../models');
 const { Op } = require('sequelize');
 
@@ -427,6 +428,27 @@ exports.getSearchCases = async (req, res, next) => {
     res.status(200).json({ casesData });
   } catch (err) {
     console.error('Error:', err);
+    next(err);
+  }
+};
+
+exports.getCasesWithReceipt = async (req, res, next) => {
+  try {
+    const casesWithReceipt = await Case.findAll({
+      attributes: { exclude: ['staffId'] },
+      include: [
+        { model: Patient, attributes: { exclude: 'password' } },
+        {
+          model: Receipt,
+          required: true,
+          // as: 'Receipt'
+          where: { id: { [Op.not]: null } }
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+    res.status(200).json({ casesData: casesWithReceipt });
+  } catch (err) {
     next(err);
   }
 };

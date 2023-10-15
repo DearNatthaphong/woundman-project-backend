@@ -13,14 +13,25 @@ const { Op } = require('sequelize');
 exports.getCasesNoReceipt = async (req, res, next) => {
   try {
     const casesNoReceipt = await Case.findAll({
+      //   attributes: { exclude: ['staffId'] },
+      //   include: [
+      //     { model: Patient, attributes: { exclude: 'password' } },
+      //     {
+      //       model: Receipt,
+      //       required: false,
+      //       where: { id: null }
+      //     }
+      //   ],
+      //   order: [['createdAt', 'DESC']]
+      // });
       attributes: { exclude: ['staffId'] },
-
+      where: { '$Receipt.id$': null },
       include: [
         { model: Patient, attributes: { exclude: 'password' } },
         {
           model: Receipt,
           required: false,
-          where: { id: null }
+          as: 'Receipt'
         }
       ],
       order: [['createdAt', 'DESC']]
