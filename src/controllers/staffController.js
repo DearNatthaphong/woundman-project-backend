@@ -23,20 +23,18 @@ exports.updateStaff = async (req, res, next) => {
       role,
       mobile,
       email,
-      password,
       ...updateValue
     } = req.body;
 
-    if (req.files && req.files.profileImage) {
+    if (req.file) {
       const profileImage = req.user.profileImage;
 
       const secureUrl = await cloudinary.upload(
-        req.files.profileImage[0].path,
+        req.file.path,
         profileImage ? cloudinary.getPublicId(profileImage) : undefined
       );
 
       updateValue.profileImage = secureUrl;
-      fs.unlinkSync(req.files.profileImage[0].path);
     }
 
     if (titleName) {
@@ -63,10 +61,6 @@ exports.updateStaff = async (req, res, next) => {
       updateValue.email = email;
     }
 
-    if (password) {
-      updateValue.password = password;
-    }
-
     await Staff.update(updateValue, { where: { id: req.user.id } });
 
     // await req.user.reload(); // ติด password มาด้วย เหมือน select *
@@ -80,5 +74,9 @@ exports.updateStaff = async (req, res, next) => {
     res.status(200).json({ staff });
   } catch (err) {
     next(err);
+  } finally {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 };

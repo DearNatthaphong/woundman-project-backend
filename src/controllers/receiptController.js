@@ -155,9 +155,19 @@ exports.getReceiptsByPatientId = async (req, res, next) => {
           where: { patientId },
           attributes: ['chiefComplain'],
           include: [
+            // {
+            //   model: Patient,
+            //   attributes: ['titleName', 'firstName', 'lastName']
+            // },
             {
-              model: Patient,
-              attributes: { exclude: 'password' }
+              model: Payment,
+              attributes: ['amount', 'price'],
+              include: [
+                {
+                  model: PaymentItem,
+                  attributes: ['title']
+                }
+              ]
             }
           ]
         }

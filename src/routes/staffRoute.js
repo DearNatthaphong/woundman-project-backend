@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.patch(
   '/',
-  // upload.single('profileImage'),
-  upload.fields([{ name: 'profileImage', maxCount: 1 }]),
+  // upload.fields([{ name: 'profileImage', maxCount: 1 }]),
+  upload.single('profileImage'),
   staffController.updateStaff
 );
 
