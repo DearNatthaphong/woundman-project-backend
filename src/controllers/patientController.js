@@ -21,15 +21,25 @@ exports.updatePatient = async (req, res, next) => {
       ...updateValue
     } = req.body;
 
-    if (req.files && req.files.profileImage) {
-      const profileImage = req.user.profileImage;
+    const patient = await Patient.findOne({
+      where: { id: patientId },
+      attributes: { exclude: 'password' }
+    });
+
+    if (req.file) {
+      // const profileImage = patient.profileImage;
+      const currentProfileImage = patient.profileImage;
 
       const secureUrl = await cloudinary.upload(
-        req.files.profileImage[0].path,
-        profileImage ? cloudinary.getPublicId(profileImage) : undefined
+        // req.files.profileImage[0].path,
+        req.file.path,
+        currentProfileImage
+          ? cloudinary.getPublicId(currentProfileImage)
+          : undefined
       );
+
       updateValue.profileImage = secureUrl;
-      fs.unlinkSync(req.files.profileImage[0].path);
+      // fs.unlinkSync(req.files.profileImage[0].path);
     }
 
     if (idCard) {
@@ -59,9 +69,9 @@ exports.updatePatient = async (req, res, next) => {
       updateValue.idLine = idLine;
     }
 
-    if (password) {
-      updateValue.password = password;
-    }
+    // if (password) {
+    //   updateValue.password = password;
+    // }
 
     await Patient.update(updateValue, { where: { id: patientId } });
 
@@ -78,17 +88,21 @@ exports.updatePatient = async (req, res, next) => {
     //   editedId: patientIdInt
     // });
 
-    const patient = await Patient.findOne({
+    const newPatient = await Patient.findOne({
       where: { id: patientId },
       attributes: { exclude: 'password' }
     });
 
-    res.status(200).json({ patient });
+    res.status(200).json({ patient: newPatient });
 
     // console.log(req.files);
     // res.status(200).json('success');
   } catch (err) {
     next(err);
+  } finally {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 };
 

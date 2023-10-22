@@ -27,11 +27,13 @@ exports.updateStaff = async (req, res, next) => {
     } = req.body;
 
     if (req.file) {
-      const profileImage = req.user.profileImage;
+      const userCurrentProfileImage = req.user.profileImage;
 
       const secureUrl = await cloudinary.upload(
         req.file.path,
-        profileImage ? cloudinary.getPublicId(profileImage) : undefined
+        userCurrentProfileImage
+          ? cloudinary.getPublicId(userCurrentProfileImage)
+          : undefined
       );
 
       updateValue.profileImage = secureUrl;
