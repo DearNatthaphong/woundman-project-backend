@@ -109,25 +109,40 @@ exports.updatePatient = async (req, res, next) => {
 exports.getSearchPatients = async (req, res, next) => {
   try {
     const { searchTerm } = req.query;
-    const patients = await Patient.findAll({
-      //GET ALL PATIENTS WHERE searchTERM include firstName or LastName
-      attributes: { exclude: 'password' },
-      order: [['createdAt', 'DESC']],
-      where: {
-        [Op.or]: [
-          {
-            firstName: {
-              [Op.like]: `%${searchTerm}%`
+
+    let patients;
+
+    if (!searchTerm) {
+      patients = await Patient.findAll({
+        attributes: { exclude: 'password' },
+        order: [['createdAt', 'DESC']]
+      });
+    } else {
+      patients = await Patient.findAll({
+        where: {
+          [Op.or]: [
+            {
+              firstName: {
+                [Op.like]: `%${searchTerm}%`
+              }
+            },
+            {
+              lastName: {
+                [Op.like]: `%${searchTerm}%`
+              }
             }
-          },
-          {
-            lastName: {
-              [Op.like]: `%${searchTerm}%`
-            }
-          }
-        ]
-      }
-    });
+          ]
+        },
+        attributes: { exclude: 'password' },
+        order: [['createdAt', 'DESC']]
+      });
+    }
+
+    if (patients.length === 0) {
+      return res
+        .status(200)
+        .json({ message: 'No patients data found', patients: [] });
+    }
 
     res.status(200).json({ patients });
   } catch (err) {

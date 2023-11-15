@@ -24,9 +24,9 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); // option สำหรับ dev อีก optionคือ 'combined'
 }
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(cors()); // server รับ req ต่าง domain ได้
+app.use(express.json()); // body parser
+app.use(express.urlencoded({ extended: false })); // body parser
 
 app.use('/auth', authRoute);
 app.use('/staffs', authenticate.authorizeStaff, staffRoute);
@@ -40,5 +40,5 @@ app.use('/receipts', receiptRoute);
 app.use(notFound);
 app.use(error);
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8000; // จะ process.env ได้ ต้อง require('dotenv').config();
 app.listen(port, () => console.log(`server running on port: ${port}`));

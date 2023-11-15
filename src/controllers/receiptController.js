@@ -53,7 +53,19 @@ exports.createReceiptByCaseId = async (req, res, next) => {
     await t.commit();
 
     const newReceipt = await Receipt.findOne({
-      where: { id: newReceiptData.id }
+      where: { id: newReceiptData.id },
+      include: [
+        {
+          model: Payment,
+          attributes: ['amount', 'price'],
+          include: [
+            {
+              model: PaymentItem,
+              attributes: ['title']
+            }
+          ]
+        }
+      ]
     });
 
     res.status(201).json({ newReceipt });
@@ -68,7 +80,7 @@ exports.getReceiptByCaseId = async (req, res, next) => {
     const id = req.params.id;
     const caseIdNumber = parseInt(id, 10);
 
-    const receiptData = await Receipt.findOne({
+    const receiptData = await Receipt.findAll({
       where: { caseId: caseIdNumber },
       include: [
         {
@@ -85,17 +97,18 @@ exports.getReceiptByCaseId = async (req, res, next) => {
     });
 
     if (!receiptData) {
-      res.status(200).json({ message: 'Receipt was not found', receipt: {} });
-      return;
+      throw new AppError('Receipt not found', 400);
+      // res.status(200).json({ message: 'Receipt was not found', receipt: {} });
+      // return;
     }
 
-    if (caseIdNumber !== receiptData.caseId) {
-      console.log('caseIdNumber:', caseIdNumber);
-      console.log('receiptData.caseId:', receiptData.caseId);
-      throw new AppError('No permission to delete', 403);
-    }
+    // if (caseIdNumber !== receiptData.caseId) {
+    //   console.log('caseIdNumber:', caseIdNumber);
+    //   console.log('receiptData.caseId:', receiptData.caseId);
+    //   throw new AppError('No permission', 403);
+    // }
 
-    res.status(200).json({ receipt: receiptData });
+    res.status(200).json({ receipts: receiptData });
   } catch (err) {
     next(err);
   }

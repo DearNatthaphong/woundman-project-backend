@@ -294,17 +294,25 @@ exports.deleteCaseByPatientId = async (req, res, next) => {
     t = await sequelize.transaction();
 
     const { patientId, caseId } = req.params;
-    const caseData = await Case.findOne({ where: { id: caseId } });
+
+    const caseIdNumber = parseInt(caseId, 10);
+    const patientIdNumber = parseInt(patientId, 10);
+
+    const caseData = await Case.findOne({ where: { id: caseIdNumber } });
     if (!caseData) {
       throw new AppError('case was not found', 400);
     }
-    if (+patientId !== caseData.patientId) {
+    if (patientIdNumber !== caseData.patientId) {
       console.log('patientId:', patientId);
       console.log('CaseData.patientId:', caseData.patientId);
       console.log('caseId:', caseData.id);
       throw new AppError('no permission to delete', 403);
     }
 
+    await Receipt.destroy({
+      where: { caseId: caseData.id },
+      transaction: t
+    });
     await Appointment.destroy({
       where: { caseId: caseData.id },
       transaction: t
@@ -317,9 +325,9 @@ exports.deleteCaseByPatientId = async (req, res, next) => {
 
     res.status(200).json({ message: 'success delete' });
   } catch (err) {
-    if (t && t.finished !== 'commit') {
-      await t.rollback();
-    }
+    // if (t && t.finished !== 'commit') {
+    await t.rollback();
+    // }
     next(err);
   }
 };
@@ -343,24 +351,30 @@ exports.getAllCases = async (req, res, next) => {
 
 exports.getCasesWithoutTreatment = async (req, res, next) => {
   try {
+    //find all caseId in treatments
+    //map treatments to caseIds array
+    //find cases without treatments
+    const treatments = await Treatment.findAll({
+      attributes: ['caseId']
+    });
+
+    const caseIds = treatments.map((item) => item.caseId);
+
     const casesWithoutTreatment = await Case.findAll({
-      attributes: { exclude: ['staffId', 'patientId'] },
       where: {
-        '$Treatments.id$': null
+        id: {
+          [Op.notIn]: caseIds
+        }
       },
+      attributes: { exclude: ['staffId', 'patientId'] },
       include: [
         { model: Staff, attributes: { exclude: 'password' } },
-        { model: Patient, attributes: { exclude: 'password' } },
-        {
-          model: Treatment,
-          required: false,
-          as: 'Treatments'
-        }
+        { model: Patient, attributes: { exclude: 'password' } }
       ],
       order: [['createdAt', 'DESC']]
     });
 
-    res.status(200).json({ cases: casesWithoutTreatment });
+    res.status(200).json({ casesData: casesWithoutTreatment });
   } catch (err) {
     next(err);
   }
@@ -395,34 +409,65 @@ exports.getCaseById = async (req, res, next) => {
 exports.getSearchCases = async (req, res, next) => {
   try {
     const { searchTerm } = req.query;
-    // console.log('Search Term:', searchTerm);
+    // console.log('SearchTerm:', searchTerm);
 
-    const casesData = await Case.findAll({
-      //GET ALL CASES WHERE searchTERM include firstName or LastName
-      where: {
-        [Op.or]: [
-          {
-            '$Patient.first_name$': {
-              [Op.like]: `%${searchTerm}%`
+    let casesData;
+
+    if (!searchTerm) {
+      casesData = await Case.findAll({
+        attributes: { exclude: ['staffId', 'patientId'] },
+        include: [
+          { model: Staff, attributes: { exclude: 'password' } },
+          { model: Patient, attributes: { exclude: 'password' } }
+        ],
+        order: [['createdAt', 'DESC']]
+      });
+    } else {
+      const patients = await Patient.findAll({
+        where: {
+          [Op.or]: [
+            {
+              firstName: {
+                [Op.like]: `%${searchTerm}%`
+              }
+            },
+            {
+              lastName: {
+                [Op.like]: `%${searchTerm}%`
+              }
             }
-          },
-          {
-            '$Patient.last_name$': {
-              [Op.like]: `%${searchTerm}%`
-            }
+          ]
+        }
+      });
+
+      if (patients.length === 0) {
+        // throw new AppError('No matching patient found', 400);
+        return res
+          .status(200)
+          .json({ message: 'No matching patient found', casesData: [] });
+      }
+
+      const patientIds = patients.map((patient) => patient.id);
+
+      casesData = await Case.findAll({
+        where: {
+          patientId: {
+            [Op.in]: patientIds
           }
-        ]
-      },
-      attributes: { exclude: ['staffId', 'patientId'] },
-      include: [
-        { model: Staff, attributes: { exclude: ['password'] } },
-        { model: Patient, attributes: { exclude: ['password'] }, as: 'Patient' }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
+        },
+        attributes: { exclude: ['staffId', 'patientId'] },
+        include: [
+          { model: Staff, attributes: { exclude: 'password' } },
+          { model: Patient, attributes: { exclude: 'password' } }
+        ],
+        order: [['createdAt', 'DESC']]
+      });
+    }
 
     if (casesData.length === 0) {
-      return res.status(404).json({ message: 'No matching cases found.' });
+      return res
+        .status(200)
+        .json({ message: 'No matching cases found.', casesData: [] });
     }
 
     res.status(200).json({ casesData });

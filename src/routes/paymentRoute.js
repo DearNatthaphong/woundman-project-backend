@@ -26,7 +26,7 @@ router
 
 router
   .route('/cases-no-receipt/:caseId/payment/:paymentId')
-  .delete(paymentController.deletePaymentsTypeServiceByPaymentId)
-  .patch(paymentController.updatePaymentsTypeServiceByPaymentId);
+  .patch(paymentController.updatePaymentsTypeServiceByPaymentId)
+  .delete(paymentController.deletePaymentsTypeServiceByPaymentId);
 
 module.exports = router;

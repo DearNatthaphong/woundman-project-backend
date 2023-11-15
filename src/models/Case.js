@@ -17,43 +17,43 @@ module.exports = (sequelize, DataTypes) => {
         }
       },
       pastHistory: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(1234),
         allowNull: false,
         validate: {
           notEmpty: true
         }
       },
       height: {
-        type: DataTypes.DECIMAL(5, 2),
+        type: DataTypes.DECIMAL(4, 1),
         allowNull: false,
         validate: {
           notEmpty: true
         }
       },
       weight: {
-        type: DataTypes.DECIMAL(5, 2),
+        type: DataTypes.DECIMAL(4, 1),
         allowNull: false,
         validate: {
           notEmpty: true
         }
       },
       temperature: {
-        type: DataTypes.DECIMAL(4, 2),
+        type: DataTypes.DECIMAL(3, 1),
         allowNull: false,
         validate: {
           notEmpty: true
         }
       },
+      // Rename bloodPressure to systolicBloodPressure
       systolicBloodPressure: {
-        // Rename bloodPressure to systolicBloodPressure
         type: DataTypes.INTEGER(3),
         allowNull: false,
         validate: {
           notEmpty: true
         }
       },
+      // New column diastolicBloodPressure
       diastolicBloodPressure: {
-        // New column diastolicBloodPressure
         type: DataTypes.INTEGER(3),
         allowNull: false,
         validate: {
@@ -81,9 +81,9 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: 'RESTRICT'
     });
     Case.belongsTo(db.Patient, {
+      // as: 'Patient',
       foreignKey: {
         name: 'patientId',
-        // as: 'Patient',
         allowNull: false
       },
       onDelete: 'RESTRICT',

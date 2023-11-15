@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       onDelete: 'RESTRICT',
-      onUpdate: 'CASCADE' // Change 'RESTRICT' to 'CASCADE' For
+      onUpdate: 'RESTRICT'
     });
     PaymentItem.hasMany(db.Payment, {
       foreignKey: {

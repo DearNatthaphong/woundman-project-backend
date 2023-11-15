@@ -14,9 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       titleName: {
         type: DataTypes.ENUM(TITLE_NAME_MR, TITLE_NAME_MISS, TITLE_NAME_MRS),
         allowNull: false,
-        validate: {
-          notEmpty: true
-        }
+        defaultValue: TITLE_NAME_MR
+        // validate: {
+        //   notEmpty: true
+        // }
       },
       firstName: {
         type: DataTypes.STRING,

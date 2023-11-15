@@ -138,7 +138,8 @@ exports.createPayment = async (req, res, next) => {
     });
 
     const newPayment = await Payment.findOne({
-      where: { id: newPaymentData.id }
+      where: { id: newPaymentData.id },
+      include: PaymentItem
     });
 
     res.status(201).json({ newPayment });
@@ -174,7 +175,8 @@ exports.getPaymentsByType = async (req, res, next) => {
           where: { title: itemsTitleArray },
           attributes: ['title']
         }
-      ]
+      ],
+      order: [['createdAt', 'ASC']]
     });
 
     if (payments.length === 0) {
@@ -222,7 +224,7 @@ exports.updatePaymentsTypeServiceByPaymentId = async (req, res, next) => {
 
     const { paymentItemTitle } = req.query;
 
-    const isNumber = validator.isNumeric(amount);
+    const isNumber = validator.isNumeric(amount + '');
 
     if (!amount || !isNumber || !paymentItemTitle || !paymentItemTitle.trim()) {
       throw new AppError('ข้อมูลไม่ครบหรือข้อมูลไม่ถูกต้อง', 400);
@@ -263,7 +265,8 @@ exports.updatePaymentsTypeServiceByPaymentId = async (req, res, next) => {
     }
 
     const updatedPaymentData = await Payment.findOne({
-      where: { id: paymentIdNumber }
+      where: { id: paymentIdNumber },
+      include: PaymentItem
     });
 
     res.status(200).json({ updatedPayment: updatedPaymentData });

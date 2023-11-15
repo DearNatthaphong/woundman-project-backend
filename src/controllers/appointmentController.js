@@ -68,13 +68,13 @@ exports.getAppointmentByCaseId = async (req, res, next) => {
       throw new AppError('Data not found', 400);
     }
 
-    const appointment = await Appointment.findOne({
+    const appointments = await Appointment.findAll({
       where: { caseId: id },
       //   attributes: {exclude: ['caseId','staffId']},
       order: [['createdAt', 'DESC']]
     });
 
-    res.status(200).json({ appointment });
+    res.status(200).json({ appointments });
   } catch (err) {
     next(err);
   }
@@ -148,7 +148,7 @@ exports.deleteAppointmentByCaseId = async (req, res, next) => {
 exports.getAppointments = async (req, res, next) => {
   try {
     const appointmentsData = await Appointment.findAll({
-      attibutes: { exclude: ['caseId'] },
+      // attributes: { exclude: 'caseId' },
       include: [
         {
           model: Case,
@@ -169,18 +169,34 @@ exports.getAppointmentsByFilter = async (req, res, next) => {
   try {
     const { status } = req.query;
 
-    const appointmentsData = await Appointment.findAll({
-      where: { status },
-      attibutes: { exclude: ['caseId'] },
-      include: [
-        {
-          model: Case,
-          attributes: ['chiefComplain'],
-          include: [{ model: Patient, attributes: { exclude: 'password' } }]
-        }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
+    let appointmentsData;
+
+    if (!status) {
+      appointmentsData = await Appointment.findAll({
+        attributes: { exclude: ['caseId'] },
+        include: [
+          {
+            model: Case,
+            attributes: ['chiefComplain'],
+            include: [{ model: Patient, attributes: { exclude: ['password'] } }]
+          }
+        ],
+        order: [['createdAt', 'DESC']]
+      });
+    } else {
+      appointmentsData = await Appointment.findAll({
+        where: { status },
+        attributes: { exclude: ['caseId'] },
+        include: [
+          {
+            model: Case,
+            attributes: ['chiefComplain'],
+            include: [{ model: Patient, attributes: { exclude: 'password' } }]
+          }
+        ],
+        order: [['createdAt', 'DESC']]
+      });
+    }
 
     if (appointmentsData.length === 0) {
       return (
@@ -200,46 +216,129 @@ exports.getAppointmentsByFilter = async (req, res, next) => {
   }
 };
 
+// exports.getAppointmentsBySearch = async (req, res, next) => {
+//   try {
+//     const { searchTerm } = req.query;
+
+//     const appointmentsData = await Appointment.findAll({
+//       where: {
+//         [Op.or]: [
+//           {
+//             '$Case.Patient.first_name$': {
+//               [Op.like]: `%${searchTerm}%`
+//             }
+//           },
+//           {
+//             '$Case.Patient.last_name$': {
+//               [Op.like]: `%${searchTerm}%`
+//             }
+//           }
+//         ]
+//       },
+//       attibutes: { exclude: ['caseId'] },
+//       include: [
+//         {
+//           model: Case,
+//           attributes: ['chiefComplain'],
+//           include: [
+//             {
+//               model: Patient,
+//               attributes: { exclude: ['password'] },
+//               as: 'Patient'
+//             }
+//           ]
+//         }
+//       ],
+//       order: [['createdAt', 'DESC']]
+//     });
+
+//     if (appointmentsData.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: 'No matching appointments found.' });
+//     }
+
+//     res.status(200).json({ appointments: appointmentsData });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
 exports.getAppointmentsBySearch = async (req, res, next) => {
   try {
     const { searchTerm } = req.query;
 
-    const appointmentsData = await Appointment.findAll({
-      where: {
-        [Op.or]: [
+    let appointmentsData;
+
+    if (!searchTerm) {
+      appointmentsData = await Appointment.findAll({
+        attributes: { exclude: ['caseId'] },
+        include: [
           {
-            '$Case.Patient.first_name$': {
-              [Op.like]: `%${searchTerm}%`
-            }
-          },
-          {
-            '$Case.Patient.last_name$': {
-              [Op.like]: `%${searchTerm}%`
-            }
+            model: Case,
+            attributes: ['chiefComplain'],
+            include: [{ model: Patient, attributes: { exclude: ['password'] } }]
           }
-        ]
-      },
-      attibutes: { exclude: ['caseId'] },
-      include: [
-        {
-          model: Case,
-          attributes: ['chiefComplain'],
-          include: [
+        ],
+        order: [['createdAt', 'DESC']]
+      });
+    } else {
+      const patients = await Patient.findAll({
+        where: {
+          [Op.or]: [
             {
-              model: Patient,
-              attributes: { exclude: ['password'] },
-              as: 'Patient'
+              firstName: {
+                [Op.like]: `%${searchTerm}%`
+              }
+            },
+            {
+              lastName: {
+                [Op.like]: `%${searchTerm}%`
+              }
             }
           ]
         }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
+      });
 
-    if (appointmentsData.length === 0) {
-      return res
-        .status(404)
-        .json({ message: 'No matching appointments found.' });
+      if (patients.length === 0) {
+        // throw new AppError('No matching patient found', 400);
+        return res
+          .status(200)
+          .json({ message: 'No matching patient found', appointments: [] });
+      }
+
+      const patientIds = patients.map((patient) => patient.id);
+
+      const cases = await Case.findAll({
+        where: {
+          patientId: {
+            [Op.in]: patientIds
+          }
+        }
+      });
+
+      if (cases.length === 0) {
+        throw new AppError('No matching cases found', 400);
+      }
+
+      const caseIds = cases.map((item) => item.id);
+
+      appointmentsData = await Appointment.findAll({
+        where: {
+          caseId: {
+            [Op.in]: caseIds
+          }
+        },
+        // attributes: { exclude: ['caseId'] },
+        include: [
+          {
+            model: Case,
+            attributes: ['chiefComplain'],
+            include: [{ model: Patient, attributes: { exclude: ['password'] } }]
+          }
+        ],
+        order: [['createdAt', 'DESC']]
+      });
     }
 
     res.status(200).json({ appointments: appointmentsData });
