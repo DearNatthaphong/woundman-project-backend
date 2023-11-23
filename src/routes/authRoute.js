@@ -11,6 +11,10 @@ router.get('/staff/me', authenticate.authorizeStaff, authController.getStaffMe);
 
 router.post('/patient/register', authController.patientRegister);
 router.post('/patient/login', authController.patientLogin);
-router.get('/patient/me', authenticate.authorizePatient, authController.getMe);
+router.get(
+  '/patient/me',
+  authenticate.authorizePatient,
+  authController.getPatientMe
+);
 
 module.exports = router;

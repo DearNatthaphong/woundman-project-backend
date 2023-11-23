@@ -107,6 +107,10 @@ exports.getCasesByPatientId = async (req, res, next) => {
     const cases = await Case.findAll({
       where: { patientId: id },
       attributes: { exclude: ['staffId', 'patientId'] },
+      include: [
+        { model: Staff, attributes: { exclude: 'password' } },
+        { model: Patient, attributes: { exclude: 'password' } }
+      ],
       order: [['createdAt', 'DESC']]
     });
 

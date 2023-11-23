@@ -19,7 +19,10 @@ module.exports = (sequelize, DataTypes) => {
           TITLE_NAME_MRS
         ),
         allowNull: false,
-        defaultValue: TITLE_NAME_ฺBOY
+        // defaultValue: TITLE_NAME_ฺBOY
+        validate: {
+          notEmpty: true
+        }
       },
       firstName: {
         type: DataTypes.STRING,
@@ -63,7 +66,10 @@ module.exports = (sequelize, DataTypes) => {
       consent: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: false
+        // defaultValue: false
+        validate: {
+          notEmpty: true
+        }
       },
       profileImage: DataTypes.STRING
     },

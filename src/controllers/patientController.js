@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { Patient, PatientProfileEditing } = require('../models');
+const { Patient, PatientProfileEditing, Staff } = require('../models');
 const cloudinary = require('../utils/cloudinary');
 const AppError = require('../utils/appError');
 const { Op } = require('sequelize');
@@ -75,7 +75,7 @@ exports.updatePatient = async (req, res, next) => {
 
     await Patient.update(updateValue, { where: { id: patientId } });
 
-    await PatientProfileEditing.create({
+    const newEditing = await PatientProfileEditing.create({
       editorId: staffId,
       editedId: patientId
     });
@@ -90,7 +90,22 @@ exports.updatePatient = async (req, res, next) => {
 
     const newPatient = await Patient.findOne({
       where: { id: patientId },
-      attributes: { exclude: 'password' }
+      attributes: { exclude: 'password' },
+      include: [
+        {
+          model: PatientProfileEditing,
+          as: 'Edited',
+          include: [
+            {
+              model: Staff,
+              as: 'Editor',
+              attributes: { exclude: 'password' }
+            }
+          ],
+          order: [['createdAt', 'DESC']],
+          limit: 1
+        }
+      ]
     });
 
     res.status(200).json({ patient: newPatient });
@@ -169,7 +184,22 @@ exports.getPatientById = async (req, res, next) => {
 
     const patient = await Patient.findOne({
       where: { id },
-      attributes: { exclude: 'password' }
+      attributes: { exclude: 'password' },
+      include: [
+        {
+          model: PatientProfileEditing,
+          as: 'Edited',
+          include: [
+            {
+              model: Staff,
+              as: 'Editor',
+              attributes: { exclude: 'password' }
+            }
+          ],
+          order: [['createdAt', 'DESC']],
+          limit: 1
+        }
+      ]
     });
 
     if (!patient) {

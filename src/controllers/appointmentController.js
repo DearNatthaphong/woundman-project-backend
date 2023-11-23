@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Appointment, Case, Patient } = require('../models');
+const { Appointment, Case, Patient, Staff } = require('../models');
 const AppError = require('../utils/appError');
 const validator = require('validator');
 
@@ -50,8 +50,11 @@ exports.createAppointment = async (req, res, next) => {
     }
 
     const newAppointment = await Appointment.create({ ...data, staffId });
+
     const newAppointmentData = await Appointment.findOne({
-      where: { id: newAppointment.id }
+      where: { id: newAppointment.id },
+      attributes: { exclude: ['staffId'] },
+      include: [{ model: Staff, attributes: { exclude: 'password' } }]
     });
 
     res.status(200).json({ newAppointment: newAppointmentData });
@@ -70,7 +73,8 @@ exports.getAppointmentByCaseId = async (req, res, next) => {
 
     const appointments = await Appointment.findAll({
       where: { caseId: id },
-      //   attributes: {exclude: ['caseId','staffId']},
+      attributes: { exclude: ['staffId'] },
+      include: [{ model: Staff, attributes: { exclude: 'password' } }],
       order: [['createdAt', 'DESC']]
     });
 
@@ -112,7 +116,9 @@ exports.updateAppointmentByCaseId = async (req, res, next) => {
     }
 
     const updatedAppointmentData = await Appointment.findOne({
-      where: { id: appointmentId }
+      where: { id: appointmentId },
+      attributes: { exclude: ['staffId'] },
+      include: [{ model: Staff, attributes: { exclude: 'password' } }]
     });
 
     res.status(200).json({ updatedAppointment: updatedAppointmentData });
@@ -148,8 +154,9 @@ exports.deleteAppointmentByCaseId = async (req, res, next) => {
 exports.getAppointments = async (req, res, next) => {
   try {
     const appointmentsData = await Appointment.findAll({
-      // attributes: { exclude: 'caseId' },
+      attributes: { exclude: ['staffId'] },
       include: [
+        { model: Staff, attributes: { exclude: 'password' } },
         {
           model: Case,
           attributes: ['chiefComplain'],
@@ -173,8 +180,9 @@ exports.getAppointmentsByFilter = async (req, res, next) => {
 
     if (!status) {
       appointmentsData = await Appointment.findAll({
-        attributes: { exclude: ['caseId'] },
+        attributes: { exclude: ['staffId'] },
         include: [
+          { model: Staff, attributes: { exclude: 'password' } },
           {
             model: Case,
             attributes: ['chiefComplain'],
@@ -186,8 +194,9 @@ exports.getAppointmentsByFilter = async (req, res, next) => {
     } else {
       appointmentsData = await Appointment.findAll({
         where: { status },
-        attributes: { exclude: ['caseId'] },
+        attributes: { exclude: ['staffId'] },
         include: [
+          { model: Staff, attributes: { exclude: 'password' } },
           {
             model: Case,
             attributes: ['chiefComplain'],
@@ -272,8 +281,9 @@ exports.getAppointmentsBySearch = async (req, res, next) => {
 
     if (!searchTerm) {
       appointmentsData = await Appointment.findAll({
-        attributes: { exclude: ['caseId'] },
+        attributes: { exclude: ['staffId'] },
         include: [
+          { model: Staff, attributes: { exclude: 'password' } },
           {
             model: Case,
             attributes: ['chiefComplain'],
@@ -330,7 +340,9 @@ exports.getAppointmentsBySearch = async (req, res, next) => {
           }
         },
         // attributes: { exclude: ['caseId'] },
+        attributes: { exclude: ['staffId'] },
         include: [
+          { model: Staff, attributes: { exclude: 'password' } },
           {
             model: Case,
             attributes: ['chiefComplain'],
@@ -393,8 +405,9 @@ exports.getAppointmentsByPatientId = async (req, res, next) => {
     const patientId = req.user.id;
 
     const appointmentsData = await Appointment.findAll({
-      attibutes: { exclude: ['caseId'] },
+      attributes: { exclude: ['staffId', 'caseId'] },
       include: [
+        { model: Staff, attributes: { exclude: 'password' } },
         {
           model: Case,
           where: { patientId },

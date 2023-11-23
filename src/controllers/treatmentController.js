@@ -51,12 +51,9 @@ exports.createTreatment = async (req, res, next) => {
 
     const newTreatment = await Treatment.create({ ...data, staffId });
     const newTreatmentData = await Treatment.findOne({
-      where: { id: newTreatment.id }
-      //   attributes: { exclude: ['staffId', 'caseId'] },
-      //   include: [
-      //     { model: Staff, attributes: { exclude: 'password' } },
-      //     { model: Case }
-      //   ]
+      where: { id: newTreatment.id },
+      attributes: { exclude: ['staffId'] },
+      include: [{ model: Staff, attributes: { exclude: 'password' } }]
     });
 
     res.status(200).json({ newTreatment: newTreatmentData });
@@ -79,7 +76,8 @@ exports.getTreatmentsByCaseId = async (req, res, next) => {
 
     const treatments = await Treatment.findAll({
       where: { caseId: id },
-      attributes: { exclude: ['caseId'] },
+      attributes: { exclude: ['staffId'] },
+      include: [{ model: Staff, attributes: { exclude: 'password' } }],
       order: [['createdAt', 'DESC']]
     });
     res.status(200).json({ treatments });
@@ -132,7 +130,9 @@ exports.updateTreatmentByCaseId = async (req, res, next) => {
     }
 
     const updatedTreatmentData = await Treatment.findOne({
-      where: { id: treatmentId }
+      where: { id: treatmentId },
+      attributes: { exclude: ['staffId'] },
+      include: [{ model: Staff, attributes: { exclude: 'password' } }]
     });
 
     res.status(200).json({ updatedTreatment: updatedTreatmentData });
@@ -172,7 +172,9 @@ exports.getAllTreatmentByPatientId = async (req, res, next) => {
     const patientId = req.user.id;
 
     const allTreatments = await Treatment.findAll({
+      attributes: { exclude: ['staffId'] },
       include: [
+        { model: Staff, attributes: { exclude: 'password' } },
         {
           model: Case,
           attributes: ['chiefComplain'],

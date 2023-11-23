@@ -56,6 +56,7 @@ exports.staffRegister = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
+
     const staff = await Staff.create({
       titleName,
       firstName,
@@ -126,6 +127,7 @@ exports.patientRegister = async (req, res, next) => {
     const isIdLine = appValidate.validateIdLine(idLine);
 
     const hashedPassword = await bcrypt.hash(password, 12);
+
     const patient = await Patient.create({
       titleName,
       firstName,
@@ -143,17 +145,11 @@ exports.patientRegister = async (req, res, next) => {
     // } catch (err) {
     //   next(err);
     // }
-  } catch (error) {
-    if (
-      error.name === 'SequelizeUniqueConstraintError' &&
-      error.fields.idLine
-    ) {
-      // Handle the uniqueness constraint violation
-      return res.status(400).json({ message: 'ID Line is already in use.' });
-    }
-
-    // Handle other errors here
-    next(error);
+  } catch (err) {
+    // if (err.name === 'SequelizeUniqueConstraintError' && err.fields.idLine) {
+    //   return res.status(400).json({ message: 'ID Line is already in use.' });
+    // }
+    next(err);
   }
 };
 
@@ -226,12 +222,12 @@ exports.staffLogin = async (req, res, next) => {
 };
 
 exports.getStaffMe = async (req, res) => {
-  res.status(200).json({ staff: req.user });
-};
-//ไม่ควรใช้ ให้ใช้ attributes
-// const { password, ...rest } = req.user.dataValues;
-// res.status(200).json({ staff: rest });
+  res.status(200).json({ staff: req.user }); // ให้ใช้ attributes
 
-exports.getMe = async (req, res) => {
+  // const { password, ...rest } = req.staff.dataValues; //ไม่ควรใช้
+  // res.status(200).json({ staff: rest });
+};
+
+exports.getPatientMe = async (req, res) => {
   res.status(200).json({ patient: req.user });
 };

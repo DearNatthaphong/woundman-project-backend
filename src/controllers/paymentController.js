@@ -179,9 +179,9 @@ exports.getPaymentsByType = async (req, res, next) => {
       order: [['createdAt', 'ASC']]
     });
 
-    if (payments.length === 0) {
-      return res.status(404).json({ message: 'No matching payment found.' });
-    }
+    // if (payments.length === 0) {
+    //   return res.status(404).json({ message: 'No matching payment found.' });
+    // }
 
     res.status(200).json({ paymentsByType: payments });
   } catch (err) {

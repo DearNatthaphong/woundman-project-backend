@@ -18,8 +18,11 @@ module.exports = (sequelize, DataTypes) => {
       method: {
         type: DataTypes.ENUM(PAYMENT_CASH, PAYMENT_TRANSFER, PAYMENT_CARD),
         allowNull: false,
-        defaultValue: PAYMENT_CASH
-      }
+        validate: {
+          notEmpty: true
+        }
+      },
+      image: DataTypes.STRING
     },
     { underscored: true }
   );

@@ -14,10 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       titleName: {
         type: DataTypes.ENUM(TITLE_NAME_MR, TITLE_NAME_MISS, TITLE_NAME_MRS),
         allowNull: false,
-        defaultValue: TITLE_NAME_MR
-        // validate: {
-        //   notEmpty: true
-        // }
+        validate: {
+          notEmpty: true
+        }
       },
       firstName: {
         type: DataTypes.STRING,
@@ -36,7 +35,9 @@ module.exports = (sequelize, DataTypes) => {
       role: {
         type: DataTypes.ENUM(ROLE_ADMIN, ROLE_NURSE, ROLE_DOCTOR),
         allowNull: false,
-        defaultValue: ROLE_ADMIN
+        validate: {
+          notEmpty: true
+        }
       },
       email: {
         type: DataTypes.STRING,
@@ -55,8 +56,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       awareness: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
+        allowNull: false
       },
       profileImage: DataTypes.STRING
     },

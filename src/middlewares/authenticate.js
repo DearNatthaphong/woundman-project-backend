@@ -9,9 +9,11 @@ const { Staff, Patient } = require('../models');
 exports.authorizeStaff = async (req, res, next) => {
   try {
     const { authorization } = req.headers;
+
     if (!authorization) {
       throw new AppError('ไม่ได้รับอนุญาต 1', 401);
     }
+
     if (!authorization.startsWith('Bearer')) {
       throw new AppError('ไม่ได้รับอนุญาต 2', 401);
     }
@@ -28,7 +30,7 @@ exports.authorizeStaff = async (req, res, next) => {
 
     const staff = await Staff.findOne({
       where: { id: payload.id },
-      attributes: { exclude: 'password' }
+      attributes: { exclude: 'password' } // ไม่เอาคอลัม password
     });
 
     if (!staff) {
@@ -36,7 +38,7 @@ exports.authorizeStaff = async (req, res, next) => {
     }
 
     req.user = staff;
-    next();
+    next(); // วิ่งไปทำงาน middleware ตัวถัดไป
   } catch (err) {
     next(err); // ส่งไปที่ middlewares error
   }

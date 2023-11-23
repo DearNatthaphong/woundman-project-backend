@@ -4,30 +4,50 @@ const {
   sequelize,
   PaymentItem,
   Patient,
-  Case
+  Case,
+  Staff
 } = require('../models');
 const AppError = require('../utils/appError');
+const cloudinary = require('../utils/cloudinary');
+const fs = require('fs');
 
 exports.createReceiptByCaseId = async (req, res, next) => {
   let t;
 
   try {
     t = await sequelize.transaction();
-    const { method, totalPrice } = req.body;
+
+    const { method, totalPrice, image, ...data } = req.body;
     const caseId = req.params.id;
     const staffId = req.user.id;
+
+    if (!method || !totalPrice) {
+      throw new AppError('ข้อมูลไม่ครบ', 400);
+    }
+
+    if (method) {
+      data.method = method;
+    }
+
+    if (totalPrice) {
+      data.totalPrice = totalPrice;
+    }
+
+    if (req.file) {
+      data.image = await cloudinary.upload(req.file.path);
+    }
 
     const receipt = await Receipt.findOne(
       { where: { caseId } },
       { transaction: t }
     );
     if (receipt) {
-      throw new AppError('Receipt already exists for this case', 400);
+      throw new AppError('มีใบเสร็จแล้ว', 400);
     }
+
     const newReceiptData = await Receipt.create(
       {
-        method,
-        totalPrice,
+        ...data,
         staffId,
         caseId
       },
@@ -47,13 +67,14 @@ exports.createReceiptByCaseId = async (req, res, next) => {
         );
       }
     } else {
-      throw new AppError('Payment was not found', 400);
+      throw new AppError('ไม่พบการทำจ่าย', 400);
     }
 
     await t.commit();
 
     const newReceipt = await Receipt.findOne({
       where: { id: newReceiptData.id },
+      attributes: { exclude: ['paymentId', 'staffId'] },
       include: [
         {
           model: Payment,
@@ -64,7 +85,8 @@ exports.createReceiptByCaseId = async (req, res, next) => {
               attributes: ['title']
             }
           ]
-        }
+        },
+        { model: Staff, attributes: { exclude: 'password' } }
       ]
     });
 
@@ -72,6 +94,10 @@ exports.createReceiptByCaseId = async (req, res, next) => {
   } catch (err) {
     if (t) await t.rollback();
     next(err);
+  } finally {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 };
 
@@ -82,6 +108,7 @@ exports.getReceiptByCaseId = async (req, res, next) => {
 
     const receiptData = await Receipt.findAll({
       where: { caseId: caseIdNumber },
+      attributes: { exclude: ['paymentId', 'staffId'] },
       include: [
         {
           model: Payment,
@@ -92,7 +119,8 @@ exports.getReceiptByCaseId = async (req, res, next) => {
               attributes: ['title']
             }
           ]
-        }
+        },
+        { model: Staff, attributes: { exclude: 'password' } }
       ]
     });
 
@@ -161,17 +189,13 @@ exports.getReceiptsByPatientId = async (req, res, next) => {
     const patientId = req.user.id;
 
     const receiptsData = await Receipt.findAll({
-      attibutes: { exclude: ['caseId'] },
+      attibutes: { exclude: ['caseId', 'staffId'] },
       include: [
         {
           model: Case,
           where: { patientId },
           attributes: ['chiefComplain'],
           include: [
-            // {
-            //   model: Patient,
-            //   attributes: ['titleName', 'firstName', 'lastName']
-            // },
             {
               model: Payment,
               attributes: ['amount', 'price'],
@@ -183,7 +207,8 @@ exports.getReceiptsByPatientId = async (req, res, next) => {
               ]
             }
           ]
-        }
+        },
+        { model: Staff, attributes: { exclude: 'password' } }
       ],
       order: [['createdAt', 'DESC']]
     });
